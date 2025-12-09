@@ -17,7 +17,7 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string; avatar?: string } | null>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
-  const { primaryColor, secondaryColor, companyLogo, companyName } = useTheme();
+  const { primaryColor, secondaryColor, companyLogo, companyName, isLoading } = useTheme();
 
   // Obtener información del usuario
   useEffect(() => {
@@ -135,6 +135,18 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
       href: '/dashboard/users',
     },
   ];
+
+  // Mostrar loader global mientras carga el tema
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
