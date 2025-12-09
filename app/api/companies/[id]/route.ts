@@ -25,6 +25,7 @@ const updateCompanySchema = z.object({
   smtpUser: z.string().email('Email inválido').optional().or(z.literal('')),
   smtpPassword: z.string().optional().default(''),
   emailTemplate: z.string().optional().default(''),
+  apiEnabled: z.boolean().optional().default(false),
 });
 
 // GET /api/companies/[id] - Obtener empresa por ID

@@ -18,6 +18,9 @@ export default function EditCompanyPage() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [showSmtpHelp, setShowSmtpHelp] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
+  const [generatingApiKey, setGeneratingApiKey] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [apiKeyCopied, setApiKeyCopied] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     nif: '',
@@ -40,6 +43,7 @@ export default function EditCompanyPage() {
     smtpUser: '',
     smtpPassword: '',
     emailTemplate: '',
+    apiEnabled: false,
   });
 
   useEffect(() => {
@@ -76,9 +80,13 @@ export default function EditCompanyPage() {
           smtpUser: data.smtpUser || '',
           smtpPassword: data.smtpPassword || '',
           emailTemplate: data.emailTemplate || '',
+          apiEnabled: data.apiEnabled || false,
         });
         if (data.logo) {
           setLogoPreview(data.logo);
+        }
+        if (data.apiKey) {
+          setApiKey(data.apiKey);
         }
       } else {
         setError('Error al cargar empresa');
@@ -217,6 +225,48 @@ export default function EditCompanyPage() {
     } finally {
       setTestingEmail(false);
     }
+  };
+
+  const handleGenerateApiKey = async () => {
+    if (apiKey && !confirm('¿Estás seguro de generar una nueva API Key? La anterior dejará de funcionar.')) {
+      return;
+    }
+
+    try {
+      setGeneratingApiKey(true);
+      const res = await fetch(`/api/companies/${companyId}/api-key`, {
+        method: 'POST',
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setApiKey(data.apiKey);
+        setFormData({ ...formData, apiEnabled: data.apiEnabled });
+        alert('✅ API Key generada exitosamente. Cópiala y guárdala en un lugar seguro.');
+      } else {
+        alert(`❌ Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error generating API key:', error);
+      alert('Error al generar API Key');
+    } finally {
+      setGeneratingApiKey(false);
+    }
+  };
+
+  const handleCopyApiKey = () => {
+    navigator.clipboard.writeText(apiKey);
+    setApiKeyCopied(true);
+    setTimeout(() => setApiKeyCopied(false), 2000);
+  };
+
+  const handleApiEnabledToggle = () => {
+    if (!apiKey) {
+      alert('Primero debes generar una API Key');
+      return;
+    }
+    setFormData({ ...formData, apiEnabled: !formData.apiEnabled });
   };
 
   return (
@@ -560,6 +610,148 @@ export default function EditCompanyPage() {
               <p className="mt-2 text-sm text-gray-500">
                 Si está vacío, se usará una plantilla profesional predeterminada. Puedes personalizar con HTML y usar variables como: <code className="bg-gray-100 px-1 rounded">{'{{company.name}}'}</code>, <code className="bg-gray-100 px-1 rounded">{'{{invoice.number}}'}</code>, <code className="bg-gray-100 px-1 rounded">{'{{contact.name}}'}</code>, <code className="bg-gray-100 px-1 rounded">{'{{invoice.total}}'}</code>
               </p>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">API de Facturas</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Consulta tus facturas de venta vía API REST
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.apiEnabled}
+                  onChange={handleApiEnabledToggle}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                <span className="ml-3 text-sm font-medium text-gray-700">
+                  {formData.apiEnabled ? 'Habilitada' : 'Deshabilitada'}
+                </span>
+              </label>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <div className="flex">
+                <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="ml-3 text-sm text-blue-800">
+                  <p className="font-semibold mb-1">¿Cómo usar la API?</p>
+                  <ul className="list-disc list-inside space-y-1 text-blue-700">
+                    <li>Genera una API Key haciendo clic en "Generar API Key"</li>
+                    <li>Copia la clave y guárdala en un lugar seguro</li>
+                    <li>Habilita la API con el interruptor de arriba</li>
+                    <li>Usa la clave en el header <code className="bg-blue-100 px-1 rounded">X-API-Key</code> de tus peticiones</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <div className="flex gap-2 mb-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGenerateApiKey}
+                    disabled={generatingApiKey}
+                    className="flex-shrink-0"
+                  >
+                    {generatingApiKey ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-teal-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Generando...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                        </svg>
+                        {apiKey ? 'Regenerar API Key' : 'Generar API Key'}
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {apiKey && (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tu API Key
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={apiKey}
+                          readOnly
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 font-mono text-sm"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleCopyApiKey}
+                        >
+                          {apiKeyCopied ? (
+                            <>
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                              Copiado
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                              Copiar
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <p className="mt-2 text-sm text-red-600">
+                        ⚠️ Guarda esta clave de forma segura. No la compartas públicamente.
+                      </p>
+                    </div>
+
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                      <p className="text-sm font-semibold text-gray-800 mb-2">Endpoint de la API:</p>
+                      <code className="text-sm text-gray-700 bg-white px-3 py-2 rounded border border-gray-300 block">
+                        GET {typeof window !== 'undefined' ? window.location.origin : ''}/api/public/invoices
+                      </code>
+                      <p className="text-xs text-gray-600 mt-2">
+                        Incluye el header: <code className="bg-white px-1 rounded">X-API-Key: {'{tu_api_key}'}</code>
+                      </p>
+                      <details className="mt-3">
+                        <summary className="text-sm font-medium text-gray-700 cursor-pointer hover:text-gray-900">
+                          Ver ejemplo con cURL
+                        </summary>
+                        <pre className="mt-2 text-xs bg-gray-900 text-green-400 p-3 rounded overflow-x-auto">
+{`curl -X GET '${typeof window !== 'undefined' ? window.location.origin : ''}/api/public/invoices' \\
+  -H 'X-API-Key: ${apiKey}'`}
+                        </pre>
+                      </details>
+                      <details className="mt-2">
+                        <summary className="text-sm font-medium text-gray-700 cursor-pointer hover:text-gray-900">
+                          Parámetros de consulta opcionales
+                        </summary>
+                        <ul className="mt-2 text-xs text-gray-600 space-y-1 list-disc list-inside">
+                          <li><code>status</code>: DRAFT, PENDING, PAID, CANCELLED</li>
+                          <li><code>paymentStatus</code>: PENDING, PARTIAL, PAID, OVERDUE</li>
+                          <li><code>startDate</code>: Fecha inicio (YYYY-MM-DD)</li>
+                          <li><code>endDate</code>: Fecha fin (YYYY-MM-DD)</li>
+                          <li><code>limit</code>: Máximo de resultados (1-100, default: 100)</li>
+                          <li><code>offset</code>: Offset para paginación (default: 0)</li>
+                        </ul>
+                      </details>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

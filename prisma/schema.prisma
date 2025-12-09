@@ -74,6 +74,10 @@ model Company {
   smtpPassword String?  // Contraseña de aplicación de Gmail
   emailTemplate String? @db.Text  // Plantilla HTML personalizada para emails de facturas
   
+  // Configuración de API
+  apiEnabled   Boolean  @default(false)  // Si la API está habilitada para esta empresa
+  apiKey       String?  @unique          // Clave de API única para autenticación
+  
   active    Boolean    @default(false)  // Solo una empresa puede estar activa a la vez
   
   createdAt DateTime   @default(now())
