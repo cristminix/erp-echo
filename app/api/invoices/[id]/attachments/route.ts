@@ -21,7 +21,7 @@ export async function GET(
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: invoiceId,
-        userId: user.id,
+        userId: user.userId,
       },
     });
 
@@ -65,7 +65,7 @@ export async function POST(
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: invoiceId,
-        userId: user.id,
+        userId: user.userId,
       },
     });
 
@@ -154,7 +154,7 @@ export async function DELETE(
     }
 
     // Verificar que la factura pertenece al usuario
-    if (attachment.invoice.userId !== user.id) {
+    if (attachment.invoice.userId !== user.userId) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
