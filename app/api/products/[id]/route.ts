@@ -8,6 +8,7 @@ const updateProductSchema = z.object({
   code: z.string().optional(),
   name: z.string().min(1, 'El nombre es requerido'),
   description: z.string().optional(),
+  type: z.enum(['storable', 'service']).optional().default('storable'),
   price: z.number().optional().default(0),
   tax: z.number().min(0).max(100).optional().default(21),
   stock: z.number().int().min(0).optional().default(0),
@@ -83,6 +84,12 @@ export async function PUT(
         value === '' ? null : value
       ])
     );
+
+    // Si el tipo es 'service', establecer stock en 0 y minStock en null
+    if (cleanData.type === 'service') {
+      cleanData.stock = 0;
+      cleanData.minStock = null;
+    }
 
     const product = await prisma.product.updateMany({
       where: {

@@ -108,3 +108,37 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const payload = await verifyAuth(request);
+
+    if (!payload) {
+      return NextResponse.json(
+        { error: 'No autenticado' },
+        { status: 401 }
+      );
+    }
+
+    // Eliminar usuario (cascade eliminará todas las empresas, productos, facturas, etc.)
+    await prisma.user.delete({
+      where: { id: payload.userId },
+    });
+
+    // Crear respuesta y borrar cookie
+    const response = NextResponse.json(
+      { success: true, message: 'Cuenta eliminada correctamente' },
+      { status: 200 }
+    );
+
+    response.cookies.delete('token');
+
+    return response;
+  } catch (error) {
+    console.error('Error al eliminar usuario:', error);
+    return NextResponse.json(
+      { error: 'Error al eliminar cuenta' },
+      { status: 500 }
+    );
+  }
+}

@@ -15,6 +15,7 @@ export default function NewProductPage() {
     name: '',
     code: '',
     description: '',
+    type: 'storable',
     price: 0,
     tax: 21,
     stock: 0,
@@ -92,7 +93,7 @@ export default function NewProductPage() {
             placeholder="Ej: Producto X"
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Input
               label="Código (opcional, se genera automáticamente)"
               name="code"
@@ -108,6 +109,18 @@ export default function NewProductPage() {
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               placeholder="Ej: Electrónica"
             />
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Producto *</label>
+              <select 
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900"
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              >
+                <option value="storable">Almacenable (con stock)</option>
+                <option value="service">Servicio (sin stock)</option>
+              </select>
+            </div>
           </div>
 
           <div>
@@ -142,14 +155,21 @@ export default function NewProductPage() {
               onChange={(e) => setFormData({ ...formData, tax: parseFloat(e.target.value) || 0 })}
             />
 
-            <Input
-              label="Stock"
-              name="stock"
-              type="number"
-              min="0"
-              value={formData.stock}
-              onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
-            />
+            {formData.type === 'storable' && (
+              <Input
+                label="Stock"
+                name="stock"
+                type="number"
+                min="0"
+                value={formData.stock}
+                onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
+              />
+            )}
+            {formData.type === 'service' && (
+              <div className="flex items-center justify-center text-gray-500 text-sm border border-gray-200 rounded-lg px-4 py-2">
+                Los servicios no tienen stock
+              </div>
+            )}
           </div>
 
           <div>

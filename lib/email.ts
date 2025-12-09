@@ -8,6 +8,83 @@ interface EmailOptions {
   companyId: string;
 }
 
+export async function sendVerificationEmail(to: string, name: string, code: string) {
+  // Usar configuración SMTP del .env
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpPort = parseInt(process.env.SMTP_PORT || '587');
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPassword = process.env.SMTP_PASSWORD;
+  const smtpFrom = process.env.SMTP_FROM || 'noreply@falconerp.xyz';
+
+  if (!smtpHost || !smtpUser || !smtpPassword) {
+    console.log('⚠️  Configuración SMTP no completa.');
+    console.log('📧 Código de verificación para', to, ':', code);
+    console.log('💡 Configura SMTP_HOST, SMTP_USER y SMTP_PASSWORD en .env para enviar emails');
+    return; // No fallar si no hay configuración
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: false,
+      auth: {
+        user: smtpUser,
+        pass: smtpPassword,
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background: #f9fafb; padding: 40px; border: 1px solid #e5e7eb; border-top: none; }
+          .code { background: white; border: 2px dashed #10b981; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; color: #10b981; letter-spacing: 8px; margin: 20px 0; border-radius: 8px; }
+          .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Verifica tu email</h1>
+          </div>
+          <div class="content">
+            <p>Hola ${name},</p>
+            <p>Gracias por registrarte en FalconERP. Para completar tu registro, por favor ingresa el siguiente código de verificación:</p>
+            <div class="code">${code}</div>
+            <p>Este código expirará en 15 minutos.</p>
+            <p>Si no solicitaste este registro, por favor ignora este email.</p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} FalconERP. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await transporter.sendMail({
+      from: `"FalconERP" <${smtpFrom}>`,
+      to,
+      subject: 'Verifica tu email - FalconERP',
+      html,
+    });
+
+    console.log('✅ Email de verificación enviado a:', to);
+  } catch (error) {
+    console.error('❌ Error al enviar email de verificación:', error);
+    // No lanzar error, solo loguear
+  }
+}
+
 export async function sendEmail({ to, subject, html, companyId }: EmailOptions) {
   try {
     // Obtener configuración SMTP de la empresa

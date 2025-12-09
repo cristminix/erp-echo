@@ -1,0 +1,9 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Bloquear comandos peligrosos de Prisma
+if git diff --cached --name-only | grep -q "package.json\|prisma/schema.prisma"; then
+  echo "⚠️  ADVERTENCIA: Cambios en schema detectados"
+  echo "❌ NO uses: prisma db push --force-reset"
+  echo "✅ Usa: prisma migrate dev --name descripcion_del_cambio"
+fi

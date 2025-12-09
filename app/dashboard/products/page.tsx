@@ -11,6 +11,7 @@ interface Product {
   code: string;
   name: string;
   description?: string;
+  type: string;
   price: number;
   tax: number;
   stock?: number;
@@ -74,10 +75,18 @@ export default function ProductsPage() {
       searchable: true
     },
     { 
-      key: 'description', 
-      label: 'Descripción',
-      searchable: true,
-      render: (product: Product) => product.description || '-'
+      key: 'type', 
+      label: 'Tipo',
+      sortable: true,
+      render: (product: Product) => (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          product.type === 'service' 
+            ? 'bg-blue-100 text-blue-800' 
+            : 'bg-green-100 text-green-800'
+        }`}>
+          {product.type === 'service' ? '🔧 Servicio' : '📦 Almacenable'}
+        </span>
+      )
     },
     { 
       key: 'category', 
@@ -102,7 +111,12 @@ export default function ProductsPage() {
       key: 'stock', 
       label: 'Stock',
       sortable: true,
-      render: (product: Product) => product.stock !== undefined ? product.stock : '-'
+      render: (product: Product) => {
+        if (product.type === 'service') {
+          return <span className="text-gray-400 italic">N/A</span>;
+        }
+        return product.stock !== undefined ? product.stock : '-';
+      }
     },
   ];
 

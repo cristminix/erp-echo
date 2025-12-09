@@ -18,6 +18,9 @@ model User {
   role      String     @default("user") // "admin" o "user"
   active    Boolean    @default(true)
   avatar    String?    // URL o base64 de la foto de perfil
+  emailVerified Boolean  @default(false) // Si el email ha sido verificado
+  verificationCode String? // Código de verificación de 6 dígitos
+  verificationCodeExpiry DateTime? // Expiración del código
   
   // Usuario que lo creó (null si es el usuario principal registrado)
   createdById String?
@@ -83,6 +86,15 @@ model Company {
   uploadToken  String?  @unique          // Token único para subir facturas desde URL pública
   uploadTokenEnabled Boolean @default(false)  // Si el token de subida está habilitado
   
+  // Configuración de Odoo JSON-RPC
+  odooUrl      String?  // URL de Odoo (ej: https://demo.odoo.com)
+  odooDb       String?  // Nombre de la base de datos de Odoo
+  odooUsername String?  // Usuario de Odoo
+  odooPassword String?  // Contraseña o API Key de Odoo
+  odooVersion  String?  @default("17")  // Versión de Odoo (1-19)
+  odooPort     String?  @default("8069")  // Puerto de conexión a Odoo
+  odooEnabled  Boolean  @default(false)  // Si la integración con Odoo está habilitada
+  
   active    Boolean    @default(false)  // Solo una empresa puede estar activa a la vez
   
   createdAt DateTime   @default(now())
@@ -145,12 +157,13 @@ model Product {
   code        String    // Código del producto
   name        String
   description String?
+  type        String    @default("storable") // "storable" (almacenable) o "service" (servicio)
   
   // Precios
   price       Float     // Precio unitario sin IVA
   tax         Float     @default(21) // Porcentaje de IVA
   
-  // Inventario
+  // Inventario (solo para productos almacenables)
   stock       Int       @default(0)
   minStock    Int?      // Stock mínimo para alertas
   
@@ -169,6 +182,7 @@ model Product {
   @@unique([companyId, code])
   @@index([userId])
   @@index([companyId])
+  @@index([type])
 }
 
 model Invoice {
@@ -317,4 +331,15 @@ model Attendance {
   @@index([userId])
   @@index([companyId])
   @@index([date])
+}
+
+model Backup {
+  id          String   @id @default(cuid())
+  name        String   // Nombre descriptivo del respaldo
+  data        String   @db.Text // JSON del respaldo
+  size        Int      // Tamaño en bytes
+  createdBy   String   // ID del usuario que creó el respaldo
+  createdAt   DateTime @default(now())
+  
+  @@index([createdAt])
 }

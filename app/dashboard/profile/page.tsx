@@ -13,6 +13,9 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -138,6 +141,36 @@ export default function ProfilePage() {
       ...passwordData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'ELIMINAR') {
+      setError('Por favor escribe ELIMINAR para confirmar');
+      return;
+    }
+
+    setDeleting(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/auth/me', {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        // Cerrar sesión y redirigir
+        await fetch('/api/auth/logout', { method: 'POST' });
+        router.push('/');
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Error al eliminar cuenta');
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setError('Error al eliminar cuenta');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (loading) {
@@ -336,6 +369,98 @@ export default function ProfilePage() {
             </Button>
           </div>
         </form>
+      </Card>
+
+      {/* Zona de Peligro - Eliminar Cuenta */}
+      <Card className="border-red-200 bg-red-50">
+        <div className="flex items-start gap-3 mb-4">
+          <svg className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <h3 className="text-xl font-semibold text-red-800">Zona de Peligro</h3>
+            <p className="text-sm text-red-700 mt-1">
+              La eliminación de tu cuenta es permanente e irreversible
+            </p>
+          </div>
+        </div>
+
+        {!showDeleteConfirm ? (
+          <Button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Eliminar mi cuenta
+          </Button>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-white p-4 rounded-lg border border-red-300">
+              <p className="text-sm text-gray-700 mb-3">
+                Esta acción eliminará permanentemente:
+              </p>
+              <ul className="text-sm text-gray-600 space-y-1 mb-3">
+                <li>✗ Tu cuenta de usuario</li>
+                <li>✗ Todas tus empresas</li>
+                <li>✗ Todos los contactos, productos y facturas</li>
+                <li>✗ Todos los datos asociados</li>
+              </ul>
+              <p className="text-sm font-semibold text-red-600">
+                Esta acción NO se puede deshacer.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-red-800 mb-2">
+                Escribe <span className="font-bold">ELIMINAR</span> para confirmar
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="ELIMINAR"
+                className="w-full px-4 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-black"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeleteConfirmText('');
+                }}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deleting || deleteConfirmText !== 'ELIMINAR'}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Eliminar Permanentemente
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );

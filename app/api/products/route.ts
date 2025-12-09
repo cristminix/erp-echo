@@ -9,6 +9,7 @@ const productSchema = z.object({
   code: z.string().optional(),
   name: z.string().min(1, 'El nombre es requerido'),
   description: z.string().optional(),
+  type: z.enum(['storable', 'service']).optional().default('storable'),
   price: z.number().optional().default(0),
   tax: z.number().min(0).max(100).optional().default(21),
   stock: z.number().int().min(0).optional().default(0),
@@ -36,6 +37,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    console.log('🔍 Consultando productos con filtros:');
+    console.log('  - userId:', payload.userId);
+    console.log('  - companyId:', companyId);
+
     const products = await prisma.product.findMany({
       where: {
         userId: payload.userId,
@@ -45,6 +50,11 @@ export async function GET(request: NextRequest) {
         createdAt: 'desc',
       },
     });
+
+    console.log(`✅ Productos encontrados: ${products.length}`);
+    if (products.length > 0) {
+      console.log('Primeros 3 productos:', products.slice(0, 3).map(p => ({ id: p.id, name: p.name, companyId: p.companyId })));
+    }
 
     return NextResponse.json(products);
   } catch (error) {
@@ -103,10 +113,11 @@ export async function POST(request: NextRequest) {
         code: productCode,
         name: validatedData.name,
         description: validatedData.description || null,
+        type: validatedData.type || 'storable',
         price: validatedData.price || 0,
         tax: validatedData.tax || 21,
-        stock: validatedData.stock || 0,
-        minStock: validatedData.minStock || null,
+        stock: validatedData.type === 'service' ? 0 : (validatedData.stock || 0),
+        minStock: validatedData.type === 'service' ? null : (validatedData.minStock || null),
         category: validatedData.category || null,
         unit: validatedData.unit || 'unidad',
         active: validatedData.active !== undefined ? validatedData.active : true,

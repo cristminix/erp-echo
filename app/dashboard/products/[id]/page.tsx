@@ -19,6 +19,7 @@ export default function EditProductPage() {
     code: '',
     name: '',
     description: '',
+    type: 'storable',
     price: '',
     tax: '21',
     stock: '0',
@@ -59,6 +60,7 @@ export default function EditProductPage() {
           code: data.code || '',
           name: data.name || '',
           description: data.description || '',
+          type: data.type || 'storable',
           price: data.price?.toString() || '0',
           tax: data.tax?.toString() || '21',
           stock: data.stock?.toString() || '0',
@@ -240,27 +242,40 @@ export default function EditProductPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Stock"
-                name="stock"
-                type="number"
-                value={formData.stock}
-                onChange={handleChange}
-                placeholder="0"
-              />
+            {formData.type === 'storable' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Stock"
+                  name="stock"
+                  type="number"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  placeholder="0"
+                />
 
-              <Input
-                label="Stock Mínimo"
-                name="minStock"
-                type="number"
-                value={formData.minStock}
-                onChange={handleChange}
-                placeholder="Opcional"
-              />
-            </div>
+                <Input
+                  label="Stock Mínimo"
+                  name="minStock"
+                  type="number"
+                  value={formData.minStock}
+                  onChange={handleChange}
+                  placeholder="Opcional"
+                />
+              </div>
+            )}
+            
+            {formData.type === 'service' && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center text-blue-800">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">Este es un servicio - no se gestiona stock</span>
+                </div>
+              </div>
+            )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Input
                 label="Categoría"
                 name="category"
@@ -285,6 +300,21 @@ export default function EditProductPage() {
                   <option value="metro">Metro</option>
                   <option value="caja">Caja</option>
                   <option value="paquete">Paquete</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tipo de Producto *
+                </label>
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white text-gray-900"
+                >
+                  <option value="storable">Almacenable (con stock)</option>
+                  <option value="service">Servicio (sin stock)</option>
                 </select>
               </div>
             </div>
