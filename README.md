@@ -1,4 +1,4 @@
-# FalconERP - Sistema ERP Simple
+# FalconERP - Sistema ERP
 
 Sistema ERP simple para facturación y gestión de productos, clientes y empresas.
 
