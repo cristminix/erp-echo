@@ -96,19 +96,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Filtrar campos vacíos y convertirlos a null
-    const cleanData = Object.fromEntries(
-      Object.entries(validatedData).map(([key, value]) => [
-        key,
-        value === '' ? null : value
-      ])
-    );
-
     const product = await prisma.product.create({
       data: {
-        ...cleanData,
-        code: productCode,
         userId: payload.userId,
+        companyId: validatedData.companyId,
+        code: productCode,
+        name: validatedData.name,
+        description: validatedData.description || null,
+        price: validatedData.price || 0,
+        tax: validatedData.tax || 21,
+        stock: validatedData.stock || 0,
+        minStock: validatedData.minStock || null,
+        category: validatedData.category || null,
+        unit: validatedData.unit || 'unidad',
+        active: validatedData.active !== undefined ? validatedData.active : true,
       },
     });
 
