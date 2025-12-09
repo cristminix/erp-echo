@@ -165,11 +165,11 @@ export default function AttendancePage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (item: { id: string }) => {
     if (!confirm('¿Estás seguro de eliminar este registro?')) return;
 
     try {
-      const res = await fetch(`/api/attendance/${id}`, {
+      const res = await fetch(`/api/attendance/${item.id}`, {
         method: 'DELETE',
       });
 
@@ -296,7 +296,6 @@ export default function AttendancePage() {
         data={attendances}
         columns={columns}
         onDelete={handleDelete}
-        searchKeys={['user.name', 'user.email']}
         emptyMessage="No hay registros de asistencia para esta fecha"
       />
 
