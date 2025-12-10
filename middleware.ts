@@ -3,22 +3,56 @@ import { verifyToken } from '@/lib/jwt';
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
+  const { pathname } = request.nextUrl;
 
-  // Rutas públicas
-  const publicPaths = ['/login', '/register', '/'];
-  const isPublicPath = publicPaths.some(path => request.nextUrl.pathname.startsWith(path));
+  // Rutas públicas que no requieren autenticación
+  const publicPaths = [
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
+    '/verify-email',
+    '/blog',
+    '/upload',
+    '/',
+  ];
+
+  const isPublicPath = publicPaths.some(path => {
+    if (path === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(path);
+  });
+
+  // Rutas del dashboard que SIEMPRE requieren autenticación
+  const isDashboardPath = pathname.startsWith('/dashboard');
+
+  // Si es ruta del dashboard sin token, redirigir al login
+  if (isDashboardPath && !token) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // Si es ruta del dashboard con token, verificar el token
+  if (isDashboardPath && token) {
+    const payload = await verifyToken(token);
+    
+    if (!payload) {
+      const response = NextResponse.redirect(new URL('/login', request.url));
+      response.cookies.delete('token');
+      return response;
+    }
+  }
 
   // Si es ruta pública, permitir acceso
   if (isPublicPath) {
     return NextResponse.next();
   }
 
-  // Si no hay token, redirigir al login
+  // Para cualquier otra ruta, verificar token
   if (!token) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Verificar token
   const payload = await verifyToken(token);
   
   if (!payload) {
@@ -35,11 +69,13 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - public files
+     * 
+     * CRITICAL: We DO NOT exclude 'api' here because API routes need protection too
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\..*$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot)$).*)',
   ],
 };

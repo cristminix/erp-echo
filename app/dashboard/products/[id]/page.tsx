@@ -112,9 +112,10 @@ export default function EditProductPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
   };
 
@@ -226,7 +227,7 @@ export default function EditProductPage() {
                 type="number"
                 step="0.01"
                 value={formData.price}
-                onChange={handleChange}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 required
                 placeholder="0.00"
               />
@@ -236,8 +237,10 @@ export default function EditProductPage() {
                 name="tax"
                 type="number"
                 step="0.01"
+                min="0"
+                max="100"
                 value={formData.tax}
-                onChange={handleChange}
+                onChange={(e) => setFormData({ ...formData, tax: e.target.value })}
                 placeholder="21"
               />
             </div>
