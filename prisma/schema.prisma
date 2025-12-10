@@ -94,7 +94,7 @@ model Company {
   odooVersion  String?  @default("17")  // Versión de Odoo (1-19)
   odooPort     String?  @default("8069")  // Puerto de conexión a Odoo
   odooEnabled  Boolean  @default(false)  // Si la integración con Odoo está habilitada
-  odooCreateInvoiceOnSale Boolean @default(false)  // Crear factura en Odoo automáticamente desde POS
+  // odooCreateInvoiceOnSale Boolean @default(false)  // Crear factura en Odoo automáticamente desde POS // TODO: Descomentar y ejecutar migración
   
   active    Boolean    @default(false)  // Solo una empresa puede estar activa a la vez
   

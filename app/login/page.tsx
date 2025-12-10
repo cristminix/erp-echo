@@ -132,17 +132,22 @@ export default function LoginPage() {
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="rememberMe"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
-              />
-              <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700 cursor-pointer">
-                Recordar usuario y contraseña
-              </label>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="rememberMe"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500 focus:ring-2"
+                />
+                <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700 cursor-pointer">
+                  Recordarme
+                </label>
+              </div>
+              <Link href="/forgot-password" className="text-sm text-teal-600 hover:text-teal-700 font-medium">
+                ¿Olvidaste tu contraseña?
+              </Link>
             </div>
 
             <Button
