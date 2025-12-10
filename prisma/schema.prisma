@@ -94,6 +94,7 @@ model Company {
   odooVersion  String?  @default("17")  // Versión de Odoo (1-19)
   odooPort     String?  @default("8069")  // Puerto de conexión a Odoo
   odooEnabled  Boolean  @default(false)  // Si la integración con Odoo está habilitada
+  odooCreateInvoiceOnSale Boolean @default(false)  // Crear factura en Odoo automáticamente desde POS
   
   active    Boolean    @default(false)  // Solo una empresa puede estar activa a la vez
   
@@ -225,6 +226,9 @@ model Invoice {
   
   // Notas
   notes         String?
+  
+  // Token público para descarga sin autenticación
+  publicToken   String?   @unique  // Token único para acceso público al PDF
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

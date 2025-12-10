@@ -276,7 +276,7 @@ export default function EditCompanyPage() {
     try {
       setGeneratingUploadToken(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/companies/${id}/upload-token`, {
+      const response = await fetch(`/api/companies/${companyId}/upload-token`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -305,7 +305,7 @@ export default function EditCompanyPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/companies/${id}/upload-token`, {
+      const response = await fetch(`/api/companies/${companyId}/upload-token`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

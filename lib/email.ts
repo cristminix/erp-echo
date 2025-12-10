@@ -1,11 +1,18 @@
 import nodemailer from 'nodemailer';
 import { prisma } from './prisma';
 
+interface EmailAttachment {
+  filename: string;
+  content: string | Buffer;
+  contentType?: string;
+}
+
 interface EmailOptions {
   to: string;
   subject: string;
   html: string;
   companyId: string;
+  attachments?: EmailAttachment[];
 }
 
 export async function sendVerificationEmail(to: string, name: string, code: string) {
@@ -85,7 +92,7 @@ export async function sendVerificationEmail(to: string, name: string, code: stri
   }
 }
 
-export async function sendEmail({ to, subject, html, companyId }: EmailOptions) {
+export async function sendEmail({ to, subject, html, companyId, attachments }: EmailOptions) {
   try {
     // Obtener configuración SMTP de la empresa
     const company = await prisma.company.findUnique({
@@ -129,6 +136,7 @@ export async function sendEmail({ to, subject, html, companyId }: EmailOptions) 
       to,
       subject,
       html,
+      attachments: attachments || [],
     });
 
     console.log('Correo enviado:', info.messageId);
@@ -139,10 +147,10 @@ export async function sendEmail({ to, subject, html, companyId }: EmailOptions) 
   }
 }
 
-export function generateInvoiceEmailTemplate(invoice: any, company: any, contact: any) {
+export function generateInvoiceEmailTemplate(invoice: any, company: any, contact: any, downloadUrl?: string) {
   // Si hay plantilla personalizada, usarla
   if (company.emailTemplate && company.emailTemplate.trim()) {
-    return replaceTemplateVariables(company.emailTemplate, invoice, company, contact);
+    return replaceTemplateVariables(company.emailTemplate, invoice, company, contact, downloadUrl);
   }
 
   // Plantilla por defecto
@@ -213,6 +221,15 @@ export function generateInvoiceEmailTemplate(invoice: any, company: any, contact
           text-decoration: none;
           border-radius: 5px;
           margin: 20px 0;
+          text-align: center;
+        }
+        .download-section {
+          background-color: #f0fdf4;
+          border: 2px solid ${company.primaryColor || '#10b981'};
+          padding: 20px;
+          border-radius: 8px;
+          margin: 20px 0;
+          text-align: center;
         }
       </style>
     </head>
@@ -226,6 +243,14 @@ export function generateInvoiceEmailTemplate(invoice: any, company: any, contact
         <p>Estimado/a ${contact.name},</p>
         
         <p>Le enviamos la factura <strong>${invoice.number}</strong> correspondiente a los servicios/productos adquiridos.</p>
+        
+        ${downloadUrl ? `
+        <div class="download-section">
+          <p style="margin-bottom: 15px;"><strong>📄 Descargar Factura en PDF</strong></p>
+          <a href="${downloadUrl}" class="button" style="color: white;">Descargar PDF</a>
+          <p style="font-size: 0.85em; color: #666; margin-top: 10px;">Haga clic en el botón para descargar su factura</p>
+        </div>
+        ` : ''}
         
         <div class="invoice-details">
           <div class="detail-row">
@@ -277,7 +302,7 @@ export function generateInvoiceEmailTemplate(invoice: any, company: any, contact
   `;
 }
 
-function replaceTemplateVariables(template: string, invoice: any, company: any, contact: any): string {
+function replaceTemplateVariables(template: string, invoice: any, company: any, contact: any, downloadUrl?: string): string {
   let result = template;
   
   // Variables de factura
@@ -291,6 +316,7 @@ function replaceTemplateVariables(template: string, invoice: any, company: any, 
   result = result.replace(/\{\{invoice\.status\}\}/g, invoice.status || '');
   result = result.replace(/\{\{invoice\.paymentStatus\}\}/g, getPaymentStatusLabel(invoice.paymentStatus || ''));
   result = result.replace(/\{\{invoice\.notes\}\}/g, invoice.notes || '');
+  result = result.replace(/\{\{invoice\.downloadUrl\}\}/g, downloadUrl || '');
   
   // Variables de empresa
   result = result.replace(/\{\{company\.name\}\}/g, company.name || '');

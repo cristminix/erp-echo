@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/jwt';
+import { getEffectiveUserId } from '@/lib/user-helpers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,10 +10,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     // Obtener empresa activa
     const activeCompany = await prisma.company.findFirst({
       where: {
-        userId: payload.userId,
+        userId: effectiveUserId,
         active: true,
       },
     });
@@ -23,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     const contacts = await prisma.contact.findMany({
       where: {
-        userId: payload.userId,
+        userId: effectiveUserId,
         companyId: activeCompany.id,
       },
       orderBy: {
@@ -45,10 +48,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     // Obtener empresa activa
     const activeCompany = await prisma.company.findFirst({
       where: {
-        userId: payload.userId,
+        userId: effectiveUserId,
         active: true,
       },
     });
@@ -66,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     const contact = await prisma.contact.create({
       data: {
-        userId: payload.userId,
+        userId: effectiveUserId,
         companyId: activeCompany.id,
         name,
         nif,

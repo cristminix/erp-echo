@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
+import ImportInvoices from '@/components/ImportInvoices';
 
 interface Backup {
   id: string;
@@ -19,6 +20,7 @@ interface OdooConfig {
   odooVersion: string;
   odooPort: string;
   odooEnabled: boolean;
+  odooCreateInvoiceOnSale: boolean;
 }
 
 export default function SettingsPage() {
@@ -27,6 +29,13 @@ export default function SettingsPage() {
   const [error, setError] = useState('');
   const [backups, setBackups] = useState<Backup[]>([]);
   const [loadingBackups, setLoadingBackups] = useState(true);
+  const [activeCompanyId, setActiveCompanyId] = useState<string>('');
+  
+  // Estados para API Token
+  const [apiToken, setApiToken] = useState<string>('');
+  const [apiEnabled, setApiEnabled] = useState<boolean>(false);
+  const [loadingToken, setLoadingToken] = useState(false);
+  const [tokenCopied, setTokenCopied] = useState(false);
   
   // Estados para Odoo
   const [odooConfig, setOdooConfig] = useState<OdooConfig>({
@@ -37,6 +46,7 @@ export default function SettingsPage() {
     odooVersion: '17',
     odooPort: '8069',
     odooEnabled: false,
+    odooCreateInvoiceOnSale: false,
   });
   const [loadingOdoo, setLoadingOdoo] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -49,7 +59,134 @@ export default function SettingsPage() {
     fetchBackups();
     fetchOdooConfig();
     fetchStats();
+    fetchActiveCompany();
   }, []);
+
+  useEffect(() => {
+    if (activeCompanyId) {
+      fetchApiToken();
+    }
+  }, [activeCompanyId]);
+
+  const fetchActiveCompany = async () => {
+    try {
+      const response = await fetch('/api/companies');
+      if (response.ok) {
+        const companies = await response.json();
+        const activeCompany = companies.find((c: any) => c.active);
+        if (activeCompany) {
+          setActiveCompanyId(activeCompany.id);
+        }
+      }
+    } catch (err) {
+      console.error('Error al cargar empresa activa:', err);
+    }
+  };
+
+  const fetchApiToken = async () => {
+    if (!activeCompanyId) return;
+    
+    try {
+      const response = await fetch(`/api/companies/${activeCompanyId}/api-token`);
+      if (response.ok) {
+        const data = await response.json();
+        setApiToken(data.apiKey || '');
+        setApiEnabled(data.apiEnabled || false);
+      }
+    } catch (err) {
+      console.error('Error al cargar token:', err);
+    }
+  };
+
+  const handleGenerateToken = async () => {
+    if (!activeCompanyId) {
+      alert('No hay empresa activa');
+      return;
+    }
+    
+    console.log('Generando token para empresa:', activeCompanyId);
+    setLoadingToken(true);
+    
+    try {
+      const response = await fetch(`/api/companies/${activeCompanyId}/api-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('Respuesta:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Token recibido:', data);
+        setApiToken(data.apiKey);
+        setApiEnabled(data.apiEnabled);
+        alert('Token generado exitosamente');
+      } else {
+        const errorData = await response.json();
+        console.error('Error del servidor:', errorData);
+        alert(`Error: ${errorData.error || 'Error al generar token'}`);
+      }
+    } catch (err) {
+      console.error('Error al generar token:', err);
+      alert('Error al generar token: ' + (err instanceof Error ? err.message : 'Error desconocido'));
+    } finally {
+      setLoadingToken(false);
+    }
+  };
+
+  const handleToggleApi = async () => {
+    setLoadingToken(true);
+    try {
+      const response = await fetch(`/api/companies/${activeCompanyId}/api-token`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiEnabled: !apiEnabled }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setApiEnabled(data.apiEnabled);
+      }
+    } catch (err) {
+      console.error('Error al cambiar estado de API:', err);
+    } finally {
+      setLoadingToken(false);
+    }
+  };
+
+  const handleCopyToken = () => {
+    if (apiToken) {
+      navigator.clipboard.writeText(apiToken);
+      setTokenCopied(true);
+      setTimeout(() => setTokenCopied(false), 2000);
+    }
+  };
+
+  const handleDeleteToken = async () => {
+    if (!confirm('¿Estás seguro de eliminar el token? Las aplicaciones que lo usan dejarán de funcionar.')) {
+      return;
+    }
+    
+    setLoadingToken(true);
+    try {
+      const response = await fetch(`/api/companies/${activeCompanyId}/api-token`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        setApiToken('');
+        setApiEnabled(false);
+        alert('Token eliminado exitosamente');
+      }
+    } catch (err) {
+      console.error('Error al eliminar token:', err);
+      alert('Error al eliminar token');
+    } finally {
+      setLoadingToken(false);
+    }
+  };
 
   const fetchBackups = async () => {
     try {
@@ -214,6 +351,7 @@ export default function SettingsPage() {
           odooVersion: data.odooVersion || '17',
           odooPort: data.odooPort || '8069',
           odooEnabled: data.odooEnabled || false,
+          odooCreateInvoiceOnSale: data.odooCreateInvoiceOnSale || false,
         });
         setHasStoredPassword(data.hasPassword || false);
         console.log('🔐 Configuración cargada. Contraseña guardada:', data.hasPassword);
@@ -598,6 +736,20 @@ export default function SettingsPage() {
             </label>
           </div>
 
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="odooCreateInvoiceOnSale"
+              checked={odooConfig.odooCreateInvoiceOnSale}
+              onChange={(e) => setOdooConfig({ ...odooConfig, odooCreateInvoiceOnSale: e.target.checked })}
+              disabled={!odooConfig.odooEnabled}
+              className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 disabled:opacity-50"
+            />
+            <label htmlFor="odooCreateInvoiceOnSale" className={`ml-2 text-sm ${odooConfig.odooEnabled ? 'text-gray-700' : 'text-gray-400'}`}>
+              Crear factura de venta en Odoo automáticamente desde POS (en borrador)
+            </label>
+          </div>
+
           <div className="flex gap-4 pt-4 border-t border-gray-200">
             <Button
               onClick={handleTestConnection}
@@ -690,6 +842,200 @@ export default function SettingsPage() {
               </div>
             </>
           )}
+        </div>
+      </div>
+
+      {/* Sección de Importar Facturas desde Excel */}
+      {activeCompanyId && (
+        <div className="mb-6">
+          <ImportInvoices companyId={activeCompanyId} />
+        </div>
+      )}
+
+      {/* Sección de API Genérica */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <svg className="w-6 h-6 text-teal-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <h2 className="text-xl font-semibold text-gray-800">API Genérica REST</h2>
+          </div>
+          {apiToken && (
+            <label className="flex items-center cursor-pointer">
+              <span className="mr-3 text-sm font-medium text-gray-700">
+                {apiEnabled ? 'API Habilitada' : 'API Deshabilitada'}
+              </span>
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={apiEnabled}
+                  onChange={handleToggleApi}
+                  disabled={loadingToken}
+                  className="sr-only"
+                />
+                <div className={`block w-14 h-8 rounded-full transition ${apiEnabled ? 'bg-teal-600' : 'bg-gray-300'}`}></div>
+                <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition transform ${apiEnabled ? 'translate-x-6' : ''}`}></div>
+              </div>
+            </label>
+          )}
+        </div>
+
+        <p className="text-gray-600 mb-4">
+          Accede a todas las tablas de la base de datos mediante API REST con autenticación por token.
+        </p>
+
+        {!apiToken ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+            <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+            </svg>
+            <p className="text-gray-600 mb-4">No hay token de API generado</p>
+            <button
+              onClick={handleGenerateToken}
+              disabled={loadingToken}
+              className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition disabled:opacity-50"
+            >
+              {loadingToken ? 'Generando...' : 'Generar Token de API'}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-semibold text-gray-700">Token de API</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCopyToken}
+                    className="text-sm px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
+                  >
+                    {tokenCopied ? '✓ Copiado' : 'Copiar'}
+                  </button>
+                  <button
+                    onClick={handleGenerateToken}
+                    disabled={loadingToken}
+                    className="text-sm px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition disabled:opacity-50"
+                  >
+                    Regenerar
+                  </button>
+                  <button
+                    onClick={handleDeleteToken}
+                    disabled={loadingToken}
+                    className="text-sm px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition disabled:opacity-50"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+              <div className="bg-gray-900 text-gray-100 rounded px-4 py-3 font-mono text-sm overflow-x-auto">
+                {apiToken}
+              </div>
+              {!apiEnabled && (
+                <p className="text-sm text-red-600 mt-2">⚠️ La API está deshabilitada. Actívala para usar este token.</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-semibold text-gray-800 mb-2">📖 Modelos Disponibles</h3>
+            <div className="flex flex-wrap gap-2">
+              {['user', 'company', 'contact', 'product', 'invoice', 'invoiceItem', 'attendance'].map((model) => (
+                <span key={model} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-mono">
+                  {model}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-gray-800 mb-2">🔗 Endpoints</h3>
+            <div className="bg-gray-50 rounded-lg p-4 space-y-3 font-mono text-sm">
+              <div>
+                <span className="text-green-600 font-semibold">GET</span>
+                <span className="text-gray-700 ml-2">/api/generic/&#123;modelo&#125;</span>
+                <p className="text-xs text-gray-500 mt-1 ml-12">Leer registros (con paginación y filtros)</p>
+              </div>
+              <div>
+                <span className="text-blue-600 font-semibold">POST</span>
+                <span className="text-gray-700 ml-2">/api/generic/&#123;modelo&#125;</span>
+                <p className="text-xs text-gray-500 mt-1 ml-12">Crear nuevo registro</p>
+              </div>
+              <div>
+                <span className="text-yellow-600 font-semibold">PUT</span>
+                <span className="text-gray-700 ml-2">/api/generic/&#123;modelo&#125;</span>
+                <p className="text-xs text-gray-500 mt-1 ml-12">Actualizar registro existente</p>
+              </div>
+              <div>
+                <span className="text-red-600 font-semibold">DELETE</span>
+                <span className="text-gray-700 ml-2">/api/generic/&#123;modelo&#125;?id=&#123;id&#125;</span>
+                <p className="text-xs text-gray-500 mt-1 ml-12">Eliminar registro</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-gray-800 mb-2">💡 Ejemplo de uso</h3>
+            <div className="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto">
+              <pre className="text-xs">
+{`# Listar productos
+curl -X GET "http://localhost:3000/api/generic/product" \\
+  -H "Authorization: Bearer tu-token-secreto"
+
+# Crear contacto
+curl -X POST "http://localhost:3000/api/generic/contact" \\
+  -H "Authorization: Bearer tu-token-secreto" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "Juan Pérez",
+    "email": "juan@ejemplo.com",
+    "isCustomer": true,
+    "userId": "xxx",
+    "companyId": "xxx"
+  }'
+
+# Actualizar producto
+curl -X PUT "http://localhost:3000/api/generic/product" \\
+  -H "Authorization: Bearer tu-token-secreto" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "id": "xxx",
+    "price": 99.99,
+    "stock": 50
+  }'`}
+              </pre>
+            </div>
+          </div>
+
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex">
+              <svg className="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div>
+                <p className="text-sm text-yellow-800 font-semibold">Seguridad</p>
+                <ul className="text-sm text-yellow-700 mt-1 list-disc list-inside space-y-1">
+                  <li>Mantén el token seguro y nunca lo compartas</li>
+                  <li>Usa HTTPS en producción</li>
+                  <li>Registra todas las peticiones para auditoría</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <a 
+              href="/GENERIC_API.md"
+              target="_blank"
+              className="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Ver Documentación Completa
+            </a>
+          </div>
         </div>
       </div>
 

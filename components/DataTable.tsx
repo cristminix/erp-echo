@@ -23,6 +23,7 @@ interface DataTableProps<T> {
   onDelete?: (item: T) => void;
   loading?: boolean;
   emptyMessage?: string;
+  showColumnToggle?: boolean;
 }
 
 export function DataTable<T extends { id: string }>({
@@ -35,12 +36,15 @@ export function DataTable<T extends { id: string }>({
   onDelete,
   loading = false,
   emptyMessage = 'No hay datos disponibles',
+  showColumnToggle = true,
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState('');
   const [visibleColumns, setVisibleColumns] = useState<Set<string>>(
     new Set(columns.map(col => col.key))
   );
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 40;
 
   // Filtrar datos por búsqueda
   const filteredData = useMemo(() => {
@@ -76,6 +80,18 @@ export function DataTable<T extends { id: string }>({
       return 0;
     });
   }, [filteredData, sortConfig]);
+
+  // Paginación
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return sortedData.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedData, currentPage, itemsPerPage]);
+
+  // Resetear a página 1 cuando cambie la búsqueda
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   // Exportar a Excel (CSV)
   const exportToExcel = () => {
@@ -190,29 +206,31 @@ export function DataTable<T extends { id: string }>({
             </Button>
 
             {/* Mostrar/Ocultar columnas */}
-            <div className="relative group">
-              <Button variant="secondary">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                </svg>
-                Columnas
-              </Button>
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 hidden group-hover:block z-10">
-                <div className="p-2 space-y-1">
-                  {columns.map(col => (
-                    <label key={col.key} className="flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={visibleColumns.has(col.key)}
-                        onChange={() => toggleColumn(col.key)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-gray-700">{col.label}</span>
-                    </label>
-                  ))}
+            {showColumnToggle && (
+              <div className="relative group">
+                <Button variant="secondary">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                  </svg>
+                  Columnas
+                </Button>
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 hidden group-hover:block z-10">
+                  <div className="p-2 space-y-1">
+                    {columns.map(col => (
+                      <label key={col.key} className="flex items-center px-3 py-2 hover:bg-gray-50 rounded cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={visibleColumns.has(col.key)}
+                          onChange={() => toggleColumn(col.key)}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-700">{col.label}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </Card>
@@ -255,7 +273,7 @@ export function DataTable<T extends { id: string }>({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {sortedData.map((item) => (
+                {paginatedData.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50">
                     {columns.filter(col => visibleColumns.has(col.key)).map(col => (
                       <td key={col.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -296,10 +314,33 @@ export function DataTable<T extends { id: string }>({
         )}
       </Card>
 
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-4">
+          <Button
+            onClick={() => setCurrentPage(p => p - 1)}
+            disabled={currentPage === 1}
+            variant="outline"
+          >
+            Anterior
+          </Button>
+          <span className="text-sm text-gray-600">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            onClick={() => setCurrentPage(p => p + 1)}
+            disabled={currentPage === totalPages}
+            variant="outline"
+          >
+            Siguiente
+          </Button>
+        </div>
+      )}
+
       {/* Contador de resultados */}
       {sortedData.length > 0 && (
-        <div className="text-sm text-gray-600 text-center">
-          Mostrando {sortedData.length} de {data.length} registros
+        <div className="text-sm text-gray-600 text-center mt-4">
+          Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, sortedData.length)} de {data.length} registros
         </div>
       )}
     </div>

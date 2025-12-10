@@ -299,6 +299,7 @@ export default function AttendancePage() {
         columns={columns}
         onDelete={handleDelete}
         emptyMessage="No hay registros de asistencia para esta fecha"
+        showColumnToggle={false}
       />
 
       {/* Modal Registrar Asistencia */}

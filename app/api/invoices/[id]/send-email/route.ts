@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
 import { sendEmail, generateInvoiceEmailTemplate } from '@/lib/email';
+import { getEffectiveUserId } from '@/lib/user-helpers';
 
 export async function POST(
   request: NextRequest,
@@ -13,11 +14,13 @@ export async function POST(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     // Obtener la factura con todos sus datos
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
       include: {
         company: true,
@@ -53,10 +56,31 @@ export async function POST(
       );
     }
 
-    // Generar el HTML del correo
-    const emailHtml = generateInvoiceEmailTemplate(invoice, invoice.company, invoice.contact);
+    // Generar token público si no existe
+    let publicToken = invoice.publicToken;
+    if (!publicToken) {
+      publicToken = `${invoice.id}-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+      try {
+        const updatedInvoice = await prisma.invoice.update({
+          where: { id: invoice.id },
+          data: { publicToken: publicToken },
+        });
+        console.log('🔑 Token público generado:', publicToken);
+      } catch (updateError) {
+        console.error('Error actualizando token:', updateError);
+        // Si falla, usamos el invoice.id como token temporal
+        publicToken = invoice.id;
+      }
+    }
 
-    // Enviar el correo
+    // Construir URL pública de descarga
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const downloadUrl = `${baseUrl}/api/public/invoices/${publicToken}/pdf`;
+
+    // Generar el HTML del correo con el enlace de descarga
+    const emailHtml = generateInvoiceEmailTemplate(invoice, invoice.company, invoice.contact, downloadUrl);
+
+    // Enviar el correo (sin adjuntos, solo con enlace de descarga)
     await sendEmail({
       to: invoice.contact.email,
       subject: `Factura ${invoice.number} - ${invoice.company.name}`,
@@ -66,7 +90,8 @@ export async function POST(
 
     return NextResponse.json({ 
       success: true, 
-      message: `Factura enviada correctamente a ${invoice.contact.email}` 
+      message: `Factura enviada correctamente a ${invoice.contact.email}`,
+      downloadUrl 
     });
   } catch (error: any) {
     console.error('Error al enviar factura por correo:', error);

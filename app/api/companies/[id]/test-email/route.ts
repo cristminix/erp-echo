@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
 import nodemailer from 'nodemailer';
+import { getEffectiveUserId } from '@/lib/user-helpers';
 
 export async function POST(
   request: NextRequest,
@@ -13,11 +14,13 @@ export async function POST(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     // Obtener la empresa con configuración SMTP
     const company = await prisma.company.findFirst({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
     });
 

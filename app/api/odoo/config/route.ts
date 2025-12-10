@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
         odooVersion: true,
         odooPort: true,
         odooEnabled: true,
+        // odooCreateInvoiceOnSale: true, // TODO: Descomentar después de ejecutar migración
       },
     });
 
@@ -39,6 +40,8 @@ export async function GET(request: NextRequest) {
       odooVersion: company.odooVersion,
       odooPort: company.odooPort,
       odooEnabled: company.odooEnabled,
+      // odooCreateInvoiceOnSale: company.odooCreateInvoiceOnSale, // TODO: Descomentar después de migración
+      odooCreateInvoiceOnSale: false, // Temporal hasta ejecutar migración
       hasPassword: !!(company.odooPassword && company.odooPassword.trim() !== ''),
     });
   } catch (error) {
@@ -60,6 +63,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { odooUrl, odooDb, odooUsername, odooPassword, odooVersion, odooPort, odooEnabled } = body;
+    // const odooCreateInvoiceOnSale = body.odooCreateInvoiceOnSale; // TODO: Descomentar después de migración
 
     // Obtener empresa activa
     const company = await prisma.company.findFirst({
@@ -81,6 +85,7 @@ export async function POST(request: NextRequest) {
       odooVersion: odooVersion || '17',
       odooPort: odooPort || '8069',
       odooEnabled: odooEnabled || false,
+      // odooCreateInvoiceOnSale: odooCreateInvoiceOnSale || false, // TODO: Descomentar después de migración
     };
     
     // Solo actualizar contraseña si se proporciona una nueva

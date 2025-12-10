@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
       company.odooPassword,
       'res.partner',
       'search_read',
-      [['|', ['customer_rank', '>', 0], ['supplier_rank', '>', 0]]], // domain
+      ['|', ['customer_rank', '>', 0], ['supplier_rank', '>', 0]], // domain (sin array extra)
       ['name', 'vat', 'email', 'phone', 'street', 'city', 'zip', 'country_id', 'customer_rank', 'supplier_rank'], // fields
       0, // offset
       limit > 0 ? limit : false, // limit (false = sin límite)

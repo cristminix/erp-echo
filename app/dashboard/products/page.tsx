@@ -89,13 +89,6 @@ export default function ProductsPage() {
       )
     },
     { 
-      key: 'category', 
-      label: 'Categoría',
-      sortable: true,
-      searchable: true,
-      render: (product: Product) => product.category || '-'
-    },
-    { 
       key: 'price', 
       label: 'Precio',
       sortable: true,
@@ -106,17 +99,6 @@ export default function ProductsPage() {
       label: 'IVA',
       sortable: true,
       render: (product: Product) => `${product.tax}%`
-    },
-    { 
-      key: 'stock', 
-      label: 'Stock',
-      sortable: true,
-      render: (product: Product) => {
-        if (product.type === 'service') {
-          return <span className="text-gray-400 italic">N/A</span>;
-        }
-        return product.stock !== undefined ? product.stock : '-';
-      }
     },
   ];
 
@@ -141,6 +123,7 @@ export default function ProductsPage() {
         createLabel="Nuevo Producto"
         onEdit={(product) => router.push(`/dashboard/products/${product.id}`)}
         emptyMessage="No hay productos registrados"
+        showColumnToggle={false}
       />
     </div>
   );

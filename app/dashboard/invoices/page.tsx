@@ -206,6 +206,7 @@ export default function InvoicesPage() {
         createLabel="Nueva Factura"
         onEdit={(invoice) => router.push(`/dashboard/invoices/${invoice.id}`)}
         emptyMessage="No hay facturas registradas"
+        showColumnToggle={false}
       />
     </div>
   );

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
+import { getEffectiveUserId } from '@/lib/user-helpers';
 import { z } from 'zod';
+import { createOdooInvoice } from '@/lib/odoo-invoice';
 
 // Schema de validación para items de factura
 const invoiceItemSchema = z.object({
@@ -36,7 +38,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const userId = payload.userId;
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
 
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
@@ -50,7 +52,7 @@ export async function GET(request: NextRequest) {
     }
 
     const whereClause: any = {
-      userId,
+      userId: effectiveUserId,
       companyId,
     };
 
@@ -107,7 +109,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const userId = payload.userId;
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
 
     const body = await request.json();
     const validatedData = invoiceSchema.parse(body);
@@ -210,7 +212,7 @@ export async function POST(request: NextRequest) {
       const newInvoice = await tx.invoice.create({
         data: {
           type: invoiceType,
-          userId,
+          userId: effectiveUserId,
           companyId: validatedData.companyId,
           contactId: validatedData.contactId,
           supplierReference: validatedData.supplierReference || null,
@@ -267,6 +269,62 @@ export async function POST(request: NextRequest) {
 
       return newInvoice;
     });
+
+    // Crear factura en Odoo si está habilitado y es una venta
+    if (invoiceType === 'SALE') {
+      try {
+        // TODO: Descomentar después de ejecutar la migración para odooCreateInvoiceOnSale
+        /* 
+        const company = await prisma.company.findUnique({
+          where: { id: validatedData.companyId },
+          select: {
+            odooEnabled: true,
+            odooCreateInvoiceOnSale: true,
+            odooUrl: true,
+            odooDb: true,
+            odooUsername: true,
+            odooPassword: true,
+            odooPort: true,
+          },
+        });
+
+        if (company?.odooEnabled && company?.odooCreateInvoiceOnSale && 
+            company.odooUrl && company.odooDb && company.odooUsername && company.odooPassword) {
+          
+          console.log('🔄 Creando factura en Odoo...');
+          
+          // Obtener productos completos para enviar a Odoo
+          const productsIds = validatedData.items.filter(i => i.productId).map(i => i.productId);
+          const products = await prisma.product.findMany({
+            where: { id: { in: productsIds as string[] } },
+          });
+
+          const odooInvoiceId = await createOdooInvoice(
+            {
+              odooUrl: company.odooUrl,
+              odooDb: company.odooDb,
+              odooUsername: company.odooUsername,
+              odooPassword: company.odooPassword,
+              odooPort: company.odooPort,
+            },
+            {
+              contactId: validatedData.contactId,
+              date: validatedData.date || new Date().toISOString(),
+              currency: validatedData.currency,
+              items: validatedData.items,
+            },
+            invoice.contact,
+            products
+          );
+
+          console.log(`✅ Factura creada en Odoo con ID: ${odooInvoiceId}`);
+        }
+        */
+      } catch (odooError) {
+        // No fallar la creación de factura si Odoo falla
+        console.error('⚠️ Error creando factura en Odoo (continuando):', odooError);
+      }
+    }
 
     return NextResponse.json(invoice, { status: 201 });
   } catch (error) {

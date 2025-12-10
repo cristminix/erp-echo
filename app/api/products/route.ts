@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { getEffectiveUserId } from '@/lib/user-helpers';
 
 // Schema de validación para productos
 const productSchema = z.object({
@@ -37,13 +38,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Obtener el ID efectivo (si fue creado por otro usuario, usar el del padre)
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+    
     console.log('🔍 Consultando productos con filtros:');
     console.log('  - userId:', payload.userId);
+    console.log('  - effectiveUserId:', effectiveUserId);
     console.log('  - companyId:', companyId);
 
     const products = await prisma.product.findMany({
       where: {
-        userId: payload.userId,
+        userId: effectiveUserId,
         companyId,
       },
       orderBy: {
@@ -73,6 +78,8 @@ export async function POST(request: NextRequest) {
     if (!payload) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
+
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
 
     const body = await request.json();
     const validatedData = productSchema.parse(body);
@@ -108,7 +115,7 @@ export async function POST(request: NextRequest) {
 
     const product = await prisma.product.create({
       data: {
-        userId: payload.userId,
+        userId: effectiveUserId,
         companyId: validatedData.companyId,
         code: productCode,
         name: validatedData.name,

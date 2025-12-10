@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import toast, { Toaster } from 'react-hot-toast';
 
 interface Product {
   id: string;
@@ -112,12 +113,7 @@ export default function POSPage() {
     console.log('Cantidad parseada:', quantity);
     
     if (quantity <= 0) {
-      alert('La cantidad debe ser mayor a 0');
-      return;
-    }
-
-    if (quantity > product.stock) {
-      alert(`Stock insuficiente. Disponible: ${product.stock}`);
+      toast.error('La cantidad debe ser mayor a 0');
       return;
     }
 
@@ -128,11 +124,6 @@ export default function POSPage() {
       // Actualizar cantidad si ya existe
       const newCart = [...cart];
       const newQuantity = newCart[existingItemIndex].quantity + quantity;
-      
-      if (newQuantity > product.stock) {
-        alert(`Stock insuficiente. Disponible: ${product.stock}`);
-        return;
-      }
 
       const subtotal = newQuantity * product.price;
       const taxAmount = subtotal * (product.tax / 100);
@@ -184,10 +175,6 @@ export default function POSPage() {
     }
 
     const item = cart[index];
-    if (newQuantity > item.product.stock) {
-      alert(`Stock insuficiente. Disponible: ${item.product.stock}`);
-      return;
-    }
 
     const subtotal = newQuantity * item.price;
     const taxAmount = subtotal * (item.tax / 100);
@@ -232,12 +219,12 @@ export default function POSPage() {
 
   const handleCheckout = async () => {
     if (!selectedContact) {
-      alert('Por favor selecciona un cliente');
+      toast.error('Por favor selecciona un cliente');
       return;
     }
 
     if (cart.length === 0) {
-      alert('El carrito está vacío');
+      toast.error('El carrito está vacío');
       return;
     }
 
@@ -275,19 +262,28 @@ export default function POSPage() {
       if (res.ok) {
         const invoice = await res.json();
         console.log('Factura creada:', invoice);
-        // Limpiar carrito
+        // Limpiar carrito y preparar para nueva venta, manteniendo el cliente seleccionado
         setCart([]);
-        setSelectedContact('');
-        alert('Factura creada exitosamente');
-        router.push(`/dashboard/invoices/${invoice.id}`);
+        setQuantityInput('1');
+        toast.success('✓ Venta completada exitosamente', {
+          duration: 3000,
+          style: {
+            background: '#10b981',
+            color: '#fff',
+          },
+        });
       } else {
         const errorData = await res.json();
         console.error('Error del servidor:', errorData);
-        alert(`Error: ${errorData.error || 'Error al crear factura'}\n${errorData.details ? JSON.stringify(errorData.details) : ''}`);
+        toast.error(`Error: ${errorData.error || 'Error al crear factura'}`, {
+          duration: 4000,
+        });
       }
     } catch (error) {
       console.error('Error creating invoice:', error);
-      alert('Error al crear factura: ' + (error instanceof Error ? error.message : 'Error desconocido'));
+      toast.error('Error al crear factura: ' + (error instanceof Error ? error.message : 'Error desconocido'), {
+        duration: 4000,
+      });
     } finally {
       setSaving(false);
     }
@@ -305,19 +301,25 @@ export default function POSPage() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">Punto de Venta</h1>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/dashboard/invoices')}
-          >
-            Volver a Facturas
-          </Button>
-        </div>
-      </div>
-
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       <div className="flex-1 flex overflow-hidden">
         {/* Área de productos - 60% */}
         <div className="w-[60%] flex flex-col border-r border-gray-200 bg-white">
@@ -339,13 +341,8 @@ export default function POSPage() {
                 <button
                   key={product.id}
                   onClick={() => addToCart(product)}
-                  disabled={product.stock <= 0}
                   type="button"
-                  className={`p-4 rounded-lg border-2 transition-all hover:shadow-lg cursor-pointer ${
-                    product.stock <= 0
-                      ? 'bg-gray-100 border-gray-300 cursor-not-allowed'
-                      : 'bg-white border-gray-200 hover:border-emerald-500'
-                  }`}
+                  className="p-4 rounded-lg border-2 transition-all hover:shadow-lg cursor-pointer bg-white border-gray-200 hover:border-emerald-500"
                 >
                   <div className="text-left">
                     <div className="text-xs text-gray-500 mb-1">{product.code}</div>
@@ -383,75 +380,44 @@ export default function POSPage() {
 
         {/* Área de carrito y checkout - 40% */}
         <div className="w-[40%] flex flex-col bg-gray-50">
-          {/* Selector de cliente */}
+          {/* Cliente y Cantidad en dos columnas */}
           <div className="p-4 bg-white border-b border-gray-200">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Cliente
-            </label>
-            <select
-              value={selectedContact}
-              onChange={(e) => setSelectedContact(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
-            >
-              <option value="">Seleccionar cliente...</option>
-              {contacts.map((contact) => (
-                <option key={contact.id} value={contact.id}>
-                  {contact.name} {contact.nif ? `(${contact.nif})` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Calculadora numérica */}
-          <div className="p-4 bg-white border-b border-gray-200">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Cantidad
-            </label>
-            <input
-              type="text"
-              value={quantityInput}
-              readOnly
-              className="w-full px-4 py-3 text-2xl text-center font-bold border-2 border-gray-300 rounded-lg bg-gray-50 mb-3 text-gray-900"
-            />
-            <div className="grid grid-cols-4 gap-2">
-              {['7', '8', '9', '←'].map((btn) => (
-                <button
-                  key={btn}
-                  onClick={() => handleNumberPadClick(btn)}
-                  className="py-3 text-lg font-semibold rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors text-gray-900"
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Cliente
+                </label>
+                <select
+                  value={selectedContact}
+                  onChange={(e) => setSelectedContact(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
                 >
-                  {btn}
-                </button>
-              ))}
-              {['4', '5', '6', 'C'].map((btn) => (
-                <button
-                  key={btn}
-                  onClick={() => handleNumberPadClick(btn)}
-                  className="py-3 text-lg font-semibold rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors text-gray-900"
-                >
-                  {btn}
-                </button>
-              ))}
-              {['1', '2', '3', '.'].map((btn) => (
-                <button
-                  key={btn}
-                  onClick={() => handleNumberPadClick(btn)}
-                  className="py-3 text-lg font-semibold rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors text-gray-900"
-                >
-                  {btn}
-                </button>
-              ))}
-              <button
-                onClick={() => handleNumberPadClick('0')}
-                className="col-span-4 py-3 text-lg font-semibold rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors text-gray-900"
-              >
-                0
-              </button>
+                  <option value="">Seleccionar...</option>
+                  {contacts.map((contact) => (
+                    <option key={contact.id} value={contact.id}>
+                      {contact.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Cantidad
+                </label>
+                <input
+                  type="number"
+                  value={quantityInput}
+                  onChange={(e) => setQuantityInput(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900"
+                  min="0.01"
+                  step="0.01"
+                />
+              </div>
             </div>
           </div>
 
           {/* Carrito */}
-          <div className="flex-1 overflow-y-auto p-4 bg-white">
+          <div className="overflow-y-auto p-4 bg-white" style={{ maxHeight: '45vh' }}>
             <h2 className="text-lg font-bold text-gray-800 mb-3">
               Carrito ({cart.length})
             </h2>

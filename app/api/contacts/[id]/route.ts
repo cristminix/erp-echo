@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/jwt';
+import { getEffectiveUserId } from '@/lib/user-helpers';
 
 export async function GET(
   request: NextRequest,
@@ -12,10 +13,12 @@ export async function GET(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     const contact = await prisma.contact.findFirst({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
     });
 
@@ -40,6 +43,8 @@ export async function PUT(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     const body = await request.json();
     const { name, nif, email, phone, address, city, postalCode, country, isCustomer, isSupplier } = body;
 
@@ -50,7 +55,7 @@ export async function PUT(
     const contact = await prisma.contact.updateMany({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
       data: {
         name,
@@ -87,10 +92,12 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     const contact = await prisma.contact.deleteMany({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
     });
 

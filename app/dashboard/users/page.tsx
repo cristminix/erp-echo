@@ -110,6 +110,7 @@ export default function UsersPage() {
         createLabel="Nuevo Usuario"
         onEdit={(user) => router.push(`/dashboard/users/${user.id}`)}
         emptyMessage="No hay usuarios registrados"
+        showColumnToggle={false}
       />
     </div>
   );

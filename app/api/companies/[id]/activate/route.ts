@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
+import { getEffectiveUserId } from '@/lib/user-helpers';
 
 // POST /api/companies/[id]/activate - Activar empresa
 export async function POST(
@@ -13,11 +14,13 @@ export async function POST(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     // Verificar que la empresa pertenece al usuario
     const company = await prisma.company.findFirst({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       }
     });
 
@@ -30,7 +33,7 @@ export async function POST(
 
     // Desactivar todas las empresas del usuario
     await prisma.company.updateMany({
-      where: { userId: payload.userId },
+      where: { userId: effectiveUserId },
       data: { active: false }
     });
 

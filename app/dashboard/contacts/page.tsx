@@ -79,35 +79,6 @@ export default function ContactsPage() {
       searchable: true,
       render: (contact: Contact) => contact.city || '-'
     },
-    { 
-      key: 'type', 
-      label: 'Tipo',
-      render: (contact: Contact) => (
-        <div className="flex gap-1">
-          {contact.isCustomer && (
-            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-              Cliente
-            </span>
-          )}
-          {contact.isSupplier && (
-            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-              Proveedor
-            </span>
-          )}
-        </div>
-      )
-    },
-    { 
-      key: 'active', 
-      label: 'Estado',
-      render: (contact: Contact) => (
-        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-          contact.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }`}>
-          {contact.active ? 'Activo' : 'Inactivo'}
-        </span>
-      )
-    },
   ];
 
   if (loading) {
@@ -131,6 +102,7 @@ export default function ContactsPage() {
         createLabel="Nuevo Contacto"
         onEdit={(contact) => router.push(`/dashboard/contacts/${contact.id}`)}
         emptyMessage="No hay contactos registrados"
+        showColumnToggle={false}
       />
     </div>
   );

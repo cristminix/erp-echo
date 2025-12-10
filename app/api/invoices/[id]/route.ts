@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { getEffectiveUserId } from '@/lib/user-helpers';
 
 // Schema de validación para items de factura
 const invoiceItemSchema = z.object({
@@ -36,10 +37,12 @@ export async function GET(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
       include: {
         company: true,
@@ -85,6 +88,8 @@ export async function PUT(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     const body = await request.json();
     const validatedData = updateInvoiceSchema.parse(body);
 
@@ -92,7 +97,7 @@ export async function PUT(
     const existingInvoice = await prisma.invoice.findFirst({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
       include: {
         items: true,
@@ -245,11 +250,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     // Verificar que la factura existe y pertenece al usuario
     const invoice = await prisma.invoice.findFirst({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
       include: {
         items: true,

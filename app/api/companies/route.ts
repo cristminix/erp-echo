@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { getEffectiveUserId } from '@/lib/user-helpers';
 
 const createCompanySchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
@@ -22,7 +23,7 @@ const createCompanySchema = z.object({
   purchaseInvoiceNextNumber: z.number().int().min(1).optional().default(1),
 });
 
-// GET /api/companies - Listar empresas del usuario
+// GET /api/companies - Listar empresas del usuario (compartidas con usuarios creados)
 export async function GET(request: NextRequest) {
   try {
     const payload = await verifyAuth(request);
@@ -30,8 +31,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    // Obtener el ID efectivo (si fue creado por otro usuario, usar el del padre)
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     const companies = await prisma.company.findMany({
-      where: { userId: payload.userId },
+      where: { userId: effectiveUserId },
       orderBy: [
         { active: 'desc' },
         { createdAt: 'desc' }
@@ -58,13 +62,16 @@ export async function POST(request: NextRequest) {
 
     console.log('User payload:', payload);
 
+    // Obtener el ID efectivo (si fue creado por otro usuario, usar el del padre)
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     // Verificar que el usuario existe en la base de datos
     const userExists = await prisma.user.findUnique({
-      where: { id: payload.userId }
+      where: { id: effectiveUserId }
     });
 
     if (!userExists) {
-      console.error('Usuario no encontrado en la base de datos:', payload.userId);
+      console.error('Usuario no encontrado en la base de datos:', effectiveUserId);
       return NextResponse.json(
         { error: 'Usuario no válido. Por favor, inicia sesión nuevamente.' },
         { status: 401 }
@@ -86,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     // Si es la primera empresa, marcarla como activa
     const companiesCount = await prisma.company.count({
-      where: { userId: payload.userId }
+      where: { userId: effectiveUserId }
     });
 
     const company = await prisma.company.create({
@@ -101,7 +108,7 @@ export async function POST(request: NextRequest) {
         email: cleanData.email,
         primaryColor: cleanData.primaryColor || '#10b981',
         secondaryColor: cleanData.secondaryColor || '#059669',
-        userId: payload.userId,
+        userId: effectiveUserId,
         active: companiesCount === 0,
       },
     });

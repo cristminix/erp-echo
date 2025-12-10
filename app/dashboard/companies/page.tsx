@@ -141,6 +141,7 @@ export default function CompaniesPage() {
         createLabel="Nueva Empresa"
         onEdit={(company) => router.push(`/dashboard/companies/${company.id}`)}
         emptyMessage="No hay empresas registradas"
+        showColumnToggle={false}
       />
     </div>
   );

@@ -188,6 +188,7 @@ export default function PurchaseInvoicesPage() {
         createLabel="Nueva Factura de Compra"
         onEdit={(invoice) => router.push(`/dashboard/purchase-invoices/${invoice.id}`)}
         emptyMessage="No hay facturas de compra registradas"
+        showColumnToggle={false}
       />
     </div>
   );

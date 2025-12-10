@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { getEffectiveUserId } from '@/lib/user-helpers';
 
 const updateCompanySchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
@@ -39,10 +40,12 @@ export async function GET(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     const company = await prisma.company.findFirst({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
       include: {
         _count: {
@@ -83,6 +86,8 @@ export async function PUT(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     const body = await request.json();
     const validatedData = updateCompanySchema.parse(body);
 
@@ -97,7 +102,7 @@ export async function PUT(
     const company = await prisma.company.updateMany({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
       data: cleanData,
     });
@@ -140,9 +145,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     // Verificar que no sea la única empresa
     const companiesCount = await prisma.company.count({
-      where: { userId: payload.userId }
+      where: { userId: effectiveUserId }
     });
 
     if (companiesCount <= 1) {
@@ -155,7 +162,7 @@ export async function DELETE(
     const company = await prisma.company.findFirst({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       }
     });
 
@@ -170,7 +177,7 @@ export async function DELETE(
     if (company.active) {
       const otherCompany = await prisma.company.findFirst({
         where: {
-          userId: payload.userId,
+          userId: effectiveUserId,
           id: { not: params.id }
         }
       });

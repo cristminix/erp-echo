@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { verifyAuth } from '@/lib/jwt';
+import { prisma } from '@/lib/prisma';
 import crypto from 'crypto';
+import { getEffectiveUserId } from '@/lib/user-helpers';
 
 export async function POST(
   request: NextRequest,
@@ -11,13 +12,14 @@ export async function POST(
     console.log('[Upload Token] Generating token for company:', params.id);
     const payload = await verifyAuth(request);
     const companyId = params.id;
-    console.log('[Upload Token] User verified:', payload.userId);
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+    console.log('[Upload Token] User verified:', payload.userId, 'Effective:', effectiveUserId);
 
     // Verificar que la empresa pertenece al usuario
     const company = await prisma.company.findFirst({
       where: {
         id: companyId,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
     });
 
@@ -66,12 +68,13 @@ export async function DELETE(
   try {
     const payload = await verifyAuth(request);
     const companyId = params.id;
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
 
     // Verificar que la empresa pertenece al usuario
     const company = await prisma.company.findFirst({
       where: {
         id: companyId,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
     });
 

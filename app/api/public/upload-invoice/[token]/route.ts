@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(
   request: NextRequest,
@@ -99,18 +99,17 @@ export async function POST(
         userId: company.userId,
         companyId: company.id,
         contactId: contact.id,
-        invoiceNumber,
-        type: 'purchase',
+        number: invoiceNumber,
+        type: 'PURCHASE',
         date: new Date(),
         dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
         currency: company.currency,
         subtotal: parseFloat(amount),
-        tax: 0,
+        taxAmount: 0,
         total: parseFloat(amount),
-        status: 'pending',
-        paymentStatus: 'pending',
+        status: 'DRAFT',
+        paymentStatus: 'UNPAID',
         notes: `Subida por: ${userName}`,
-        attachment: fileData,
       },
     });
 
@@ -127,7 +126,7 @@ export async function POST(
       message: 'Factura de compra creada exitosamente',
       invoice: {
         id: invoice.id,
-        invoiceNumber: invoice.invoiceNumber,
+        invoiceNumber: invoice.number,
         supplier: supplierName,
         amount: invoice.total,
         date: invoice.date,

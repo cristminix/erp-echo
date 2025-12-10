@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuth } from '@/lib/jwt';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { getEffectiveUserId } from '@/lib/user-helpers';
 
 // Schema de validación para actualizar producto
 const updateProductSchema = z.object({
@@ -28,6 +29,8 @@ export async function GET(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
 
@@ -41,7 +44,7 @@ export async function GET(
     const product = await prisma.product.findFirst({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
         companyId,
       },
     });
@@ -74,6 +77,8 @@ export async function PUT(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     const body = await request.json();
     const validatedData = updateProductSchema.parse(body);
 
@@ -94,7 +99,7 @@ export async function PUT(
     const product = await prisma.product.updateMany({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
       data: cleanData,
     });
@@ -134,10 +139,12 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
+
     const product = await prisma.product.deleteMany({
       where: {
         id: params.id,
-        userId: payload.userId,
+        userId: effectiveUserId,
       },
     });
 
