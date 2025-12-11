@@ -166,12 +166,20 @@ export default function ProjectsPage() {
           <h1 className="text-3xl font-bold text-gray-800">Proyectos</h1>
           <p className="text-gray-600 mt-1">Gestiona tus proyectos y tareas</p>
         </div>
-        <Link href="/dashboard/projects/new">
-          <Button>
-            <span className="mr-2">+</span>
-            Nuevo Proyecto
-          </Button>
-        </Link>
+        <div className="flex gap-3">
+          <Link href="/dashboard/projects/calendar">
+            <Button variant="outline">
+              <span className="mr-2">📅</span>
+              Calendario
+            </Button>
+          </Link>
+          <Link href="/dashboard/projects/new">
+            <Button>
+              <span className="mr-2">+</span>
+              Nuevo Proyecto
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {projects.length === 0 ? (

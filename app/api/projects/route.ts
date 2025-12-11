@@ -11,6 +11,8 @@ const projectSchema = z.object({
   status: z.enum(['ACTIVE', 'COMPLETED', 'ARCHIVED']).optional().default('ACTIVE'),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
+  productId: z.string().optional(),
+  salePrice: z.number().positive().optional(),
   color: z.string().optional().default('#10b981'),
 });
 
@@ -102,10 +104,20 @@ export async function POST(request: NextRequest) {
         status: validatedData.status || 'ACTIVE',
         startDate: validatedData.startDate ? new Date(validatedData.startDate) : null,
         endDate: validatedData.endDate ? new Date(validatedData.endDate) : null,
+        productId: validatedData.productId,
+        salePrice: validatedData.salePrice,
         color: validatedData.color,
       },
       include: {
         tasks: true,
+        product: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            price: true,
+          },
+        },
         _count: {
           select: { tasks: true },
         },

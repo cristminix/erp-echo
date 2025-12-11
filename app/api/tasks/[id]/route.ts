@@ -12,6 +12,7 @@ const updateTaskSchema = z.object({
   dueDate: z.string().optional().nullable(),
   assignedToId: z.string().optional().nullable(),
   estimatedHours: z.number().positive().optional().nullable(),
+  cost: z.number().nonnegative().optional().nullable(),
 });
 
 // PUT - Actualizar tarea
@@ -40,6 +41,10 @@ export async function PUT(
     
     if (validatedData.estimatedHours !== undefined) {
       updateData.estimatedHours = validatedData.estimatedHours || null;
+    }
+    
+    if (validatedData.cost !== undefined) {
+      updateData.cost = validatedData.cost || null;
     }
     
     if (validatedData.completed !== undefined) {

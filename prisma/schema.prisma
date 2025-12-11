@@ -52,6 +52,7 @@ model User {
   tasks     Task[] @relation("TaskCreator")
   assignedTasks Task[] @relation("TaskAssignee")
   trackings Tracking[]
+  projectStaff ProjectStaff[]
 }
 
 model Company {
@@ -205,6 +206,7 @@ model Product {
   invoiceItems InvoiceItem[]
   quoteItems   QuoteItem[]
   trackings    Tracking[]
+  projects     Project[]
   
   @@unique([companyId, code])
   @@index([userId])
@@ -523,6 +525,11 @@ model Project {
   startDate   DateTime?
   endDate     DateTime?
   
+  // Facturación del proyecto
+  productId   String?   // Producto/Servicio asociado para facturación
+  product     Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  salePrice   Decimal?  @db.Decimal(10, 2) // Precio de venta del proyecto
+  
   color       String?  @default("#10b981") // Color para identificación visual
   
   active      Boolean  @default(true)
@@ -534,10 +541,32 @@ model Project {
   attendances Attendance[]
   invoiceItems InvoiceItem[]
   quoteItems   QuoteItem[]
+  staff       ProjectStaff[] // Personal asignado al proyecto
   
   @@index([userId])
   @@index([companyId])
   @@index([status])
+  @@index([productId])
+}
+
+// Personal asignado a proyectos con su coste
+model ProjectStaff {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  hourlyRate  Decimal  @db.Decimal(10, 2) // Coste por hora de este usuario en este proyecto
+  role        String?  // Rol en el proyecto (ej: "Desarrollador", "Gerente de Proyecto")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([projectId, userId]) // Un usuario solo puede estar asignado una vez por proyecto
+  @@index([projectId])
+  @@index([userId])
 }
 
 enum ProjectStatus {
@@ -564,6 +593,7 @@ model Task {
   priority    TaskPriority @default(MEDIUM)
   
   estimatedHours Decimal? @db.Decimal(10, 2) // Horas estimadas para completar la tarea
+  cost        Decimal? @db.Decimal(10, 2) // Coste asociado a la tarea
   
   dueDate     DateTime?
   completedAt DateTime?

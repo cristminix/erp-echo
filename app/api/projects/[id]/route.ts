@@ -10,6 +10,8 @@ const updateProjectSchema = z.object({
   status: z.enum(['ACTIVE', 'COMPLETED', 'ARCHIVED']).optional(),
   startDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
+  productId: z.string().optional().nullable(),
+  salePrice: z.number().positive().optional().nullable(),
   color: z.string().optional(),
 });
 
@@ -34,6 +36,26 @@ export async function GET(
       include: {
         tasks: {
           orderBy: { order: 'asc' },
+        },
+        product: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            price: true,
+          },
+        },
+        staff: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                hourlyRate: true,
+              },
+            },
+          },
         },
         _count: {
           select: { tasks: true },
@@ -78,6 +100,8 @@ export async function PUT(
     if (validatedData.description !== undefined) updateData.description = validatedData.description;
     if (validatedData.status !== undefined) updateData.status = validatedData.status;
     if (validatedData.color !== undefined) updateData.color = validatedData.color;
+    if (validatedData.productId !== undefined) updateData.productId = validatedData.productId;
+    if (validatedData.salePrice !== undefined) updateData.salePrice = validatedData.salePrice;
     if (validatedData.startDate !== undefined) {
       updateData.startDate = validatedData.startDate ? new Date(validatedData.startDate) : null;
     }

@@ -8,6 +8,7 @@ export default function HomeClient() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
     checkAuth();
@@ -17,7 +18,9 @@ export default function HomeClient() {
     try {
       const res = await fetch('/api/auth/me');
       if (res.ok) {
+        const data = await res.json();
         setIsAuthenticated(true);
+        setUserName(data.name || data.email || 'Usuario');
       }
     } catch (error) {
       console.error('Error checking auth:', error);
@@ -61,7 +64,7 @@ export default function HomeClient() {
                   <>
                     <Link href="/dashboard">
                       <button className="px-4 py-2 text-teal-600 hover:text-teal-700 font-medium">
-                        Dashboard
+                        {userName}
                       </button>
                     </Link>
                     <button 

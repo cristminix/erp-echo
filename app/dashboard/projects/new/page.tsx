@@ -7,17 +7,50 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 
+interface Product {
+  id: string;
+  code: string;
+  name: string;
+  price: number;
+  type: string;
+}
+
 export default function NewProjectPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [products, setProducts] = useState<Product[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     color: '#10b981',
     startDate: '',
     endDate: '',
+    productId: '',
+    salePrice: '',
   });
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const companiesRes = await fetch('/api/companies');
+      const companies = await companiesRes.json();
+      const activeCompany = companies.find((c: any) => c.active);
+
+      if (activeCompany) {
+        const res = await fetch(`/api/products?companyId=${activeCompany.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setProducts(data);
+        }
+      }
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +74,8 @@ export default function NewProjectPage() {
         body: JSON.stringify({
           ...formData,
           companyId: activeCompany.id,
+          productId: formData.productId || undefined,
+          salePrice: formData.salePrice ? parseFloat(formData.salePrice) : undefined,
         }),
       });
 
@@ -91,6 +126,36 @@ export default function NewProjectPage() {
               rows={4}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900"
               placeholder="Describe el proyecto..."
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Producto/Servicio para Facturación
+              </label>
+              <select
+                value={formData.productId}
+                onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900"
+              >
+                <option value="">Sin producto asociado</option>
+                {products.filter(p => p.type === 'service').map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.code} - {product.name} ({product.price}€)
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <Input
+              label="Precio de Venta del Proyecto (€)"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.salePrice}
+              onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+              placeholder="ej: 5000.00"
             />
           </div>
 

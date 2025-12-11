@@ -11,6 +11,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  hourlyRate?: number | null;
 }
 
 interface Task {
@@ -22,7 +23,25 @@ interface Task {
   dueDate: string | null;
   completedAt: string | null;
   order: number;
+  cost: number | null;
   assignedTo?: User | null;
+}
+
+interface Product {
+  id: string;
+  code: string;
+  name: string;
+  price: number;
+  type: string;
+}
+
+interface ProjectStaff {
+  id: string;
+  userId: string;
+  hourlyRate: number;
+  role: string | null;
+  user: User;
+  createdAt: string;
 }
 
 interface Project {
@@ -31,9 +50,14 @@ interface Project {
   description: string;
   status: string;
   color: string;
+  companyId: string;
   startDate: string | null;
   endDate: string | null;
+  productId: string | null;
+  salePrice: number | null;
+  product?: Product | null;
   tasks: Task[];
+  staff?: ProjectStaff[];
 }
 
 export default function ProjectDetailPage() {
@@ -42,10 +66,13 @@ export default function ProjectDetailPage() {
 
   const [project, setProject] = useState<Project | null>(null);
   const [users, setUsers] = useState<User[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showNewTask, setShowNewTask] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [showAddStaff, setShowAddStaff] = useState(false);
+  const [editingStaffId, setEditingStaffId] = useState<string | null>(null);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -53,6 +80,7 @@ export default function ProjectDetailPage() {
     dueDate: '',
     assignedToId: '',
     estimatedHours: '',
+    cost: '',
   });
   const [editTask, setEditTask] = useState({
     title: '',
@@ -61,6 +89,27 @@ export default function ProjectDetailPage() {
     dueDate: '',
     assignedToId: '',
     estimatedHours: '',
+    cost: '',
+  });
+  const [newStaff, setNewStaff] = useState({
+    userId: '',
+    hourlyRate: '',
+    role: '',
+  });
+  const [editStaff, setEditStaff] = useState({
+    hourlyRate: '',
+    role: '',
+  });
+  const [showEditProject, setShowEditProject] = useState(false);
+  const [editProject, setEditProject] = useState({
+    name: '',
+    description: '',
+    status: 'ACTIVE',
+    startDate: '',
+    endDate: '',
+    productId: '',
+    salePrice: '',
+    color: '#10b981',
   });
 
   useEffect(() => {
@@ -77,6 +126,10 @@ export default function ProjectDetailPage() {
       if (res.ok) {
         const data = await res.json();
         setProject(data);
+        // Cargar productos después de obtener el proyecto
+        if (data.companyId) {
+          fetchProducts(data.companyId);
+        }
       } else {
         setError('Error al cargar proyecto');
       }
@@ -97,6 +150,162 @@ export default function ProjectDetailPage() {
       }
     } catch (error) {
       console.error('Error al cargar usuarios:', error);
+    }
+  };
+
+  const fetchProducts = async (companyId?: string) => {
+    try {
+      // Usar el companyId proporcionado o del proyecto
+      const cId = companyId || project?.companyId;
+      if (!cId) return;
+      
+      const res = await fetch(`/api/products?companyId=${cId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setProducts(data);
+      }
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+    }
+  };
+
+  // Funciones para gestión de personal
+  const handleAddStaff = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStaff.userId || !newStaff.hourlyRate) return;
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/staff`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: newStaff.userId,
+          hourlyRate: parseFloat(newStaff.hourlyRate),
+          role: newStaff.role || null,
+        }),
+      });
+
+      if (res.ok) {
+        setNewStaff({ userId: '', hourlyRate: '', role: '' });
+        setShowAddStaff(false);
+        fetchProject();
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleUpdateStaff = async (e: React.FormEvent, staffId: string) => {
+    e.preventDefault();
+    if (!editStaff.hourlyRate) return;
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/staff/${staffId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hourlyRate: parseFloat(editStaff.hourlyRate),
+          role: editStaff.role || null,
+        }),
+      });
+
+      if (res.ok) {
+        setEditingStaffId(null);
+        fetchProject();
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleDeleteStaff = async (staffId: string) => {
+    if (!confirm('¿Eliminar este miembro del equipo?')) return;
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/staff/${staffId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        fetchProject();
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleStartEditStaff = (staff: ProjectStaff) => {
+    setEditingStaffId(staff.id);
+    setEditStaff({
+      hourlyRate: staff.hourlyRate.toString(),
+      role: staff.role || '',
+    });
+  };
+
+  const handleCancelEditStaff = () => {
+    setEditingStaffId(null);
+    setEditStaff({ hourlyRate: '', role: '' });
+  };
+
+  // Calcular coste total de personal
+  const getStaffCosts = () => {
+    if (!project?.staff) return { totalHourlyRate: 0, staffCount: 0 };
+    const totalHourlyRate = project.staff.reduce((sum, s) => sum + parseFloat(s.hourlyRate.toString()), 0);
+    return { totalHourlyRate, staffCount: project.staff.length };
+  };
+
+  // Calcular coste total de tareas
+  const getTasksCosts = () => {
+    if (!project?.tasks) return { totalTasksCost: 0, tasksWithCost: 0 };
+    const totalTasksCost = project.tasks.reduce((sum, t) => {
+      return sum + (t.cost ? parseFloat(t.cost.toString()) : 0);
+    }, 0);
+    const tasksWithCost = project.tasks.filter(t => t.cost && t.cost > 0).length;
+    return { totalTasksCost, tasksWithCost };
+  };
+
+  // Funciones para editar proyecto
+  const handleStartEditProject = () => {
+    if (!project) return;
+    setEditProject({
+      name: project.name,
+      description: project.description || '',
+      status: project.status,
+      startDate: project.startDate ? project.startDate.split('T')[0] : '',
+      endDate: project.endDate ? project.endDate.split('T')[0] : '',
+      productId: project.productId || '',
+      salePrice: project.salePrice?.toString() || '',
+      color: project.color,
+    });
+    setShowEditProject(true);
+  };
+
+  const handleUpdateProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editProject.name) return;
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editProject.name,
+          description: editProject.description || null,
+          status: editProject.status,
+          startDate: editProject.startDate || null,
+          endDate: editProject.endDate || null,
+          productId: editProject.productId || null,
+          salePrice: editProject.salePrice ? parseFloat(editProject.salePrice) : null,
+          color: editProject.color,
+        }),
+      });
+
+      if (res.ok) {
+        setShowEditProject(false);
+        fetchProject();
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
@@ -125,6 +334,7 @@ export default function ProjectDetailPage() {
         ...newTask,
         projectId,
         estimatedHours: newTask.estimatedHours ? parseFloat(newTask.estimatedHours) : undefined,
+        cost: newTask.cost ? parseFloat(newTask.cost) : undefined,
       };
 
       const res = await fetch('/api/tasks', {
@@ -134,7 +344,7 @@ export default function ProjectDetailPage() {
       });
 
       if (res.ok) {
-        setNewTask({ title: '', description: '', priority: 'MEDIUM', dueDate: '', assignedToId: '', estimatedHours: '' });
+        setNewTask({ title: '', description: '', priority: 'MEDIUM', dueDate: '', assignedToId: '', estimatedHours: '', cost: '' });
         setShowNewTask(false);
         fetchProject();
       }
@@ -168,9 +378,9 @@ export default function ProjectDetailPage() {
       dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
       assignedToId: task.assignedTo?.id || '',
       estimatedHours: '',
+      cost: task.cost?.toString() || '',
     });
   };
-
   const handleCancelEdit = () => {
     setEditingTaskId(null);
     setEditTask({
@@ -180,6 +390,7 @@ export default function ProjectDetailPage() {
       dueDate: '',
       assignedToId: '',
       estimatedHours: '',
+      cost: '',
     });
   };
 
@@ -191,6 +402,7 @@ export default function ProjectDetailPage() {
       const taskData = {
         ...editTask,
         estimatedHours: editTask.estimatedHours ? parseFloat(editTask.estimatedHours) : null,
+        cost: editTask.cost ? parseFloat(editTask.cost) : null,
       };
 
       const res = await fetch(`/api/tasks/${taskId}`, {
@@ -200,6 +412,7 @@ export default function ProjectDetailPage() {
       });
 
       if (res.ok) {
+        setEditingTaskId(null);
         setEditingTaskId(null);
         fetchProject();
       }
@@ -281,6 +494,13 @@ export default function ProjectDetailPage() {
         </div>
         <div className="flex gap-2">
           <Button
+            onClick={handleStartEditProject}
+            variant="secondary"
+            className="flex items-center gap-2"
+          >
+            ✏️ Editar
+          </Button>
+          <Button
             onClick={handleCopyPublicLink}
             variant="secondary"
             className="flex items-center gap-2"
@@ -295,6 +515,106 @@ export default function ProjectDetailPage() {
           </Button>
         </div>
       </div>
+
+      {/* Edit Project Modal */}
+      {showEditProject && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Editar Proyecto</h2>
+            <form onSubmit={handleUpdateProject} className="space-y-4">
+              <Input
+                label="Nombre del proyecto *"
+                value={editProject.name}
+                onChange={(e) => setEditProject({ ...editProject, name: e.target.value })}
+                required
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <textarea
+                  value={editProject.description}
+                  onChange={(e) => setEditProject({ ...editProject, description: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  rows={3}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                  <select
+                    value={editProject.status}
+                    onChange={(e) => setEditProject({ ...editProject, status: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900"
+                  >
+                    <option value="ACTIVE">Activo</option>
+                    <option value="COMPLETED">Completado</option>
+                    <option value="ARCHIVED">Archivado</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                  <input
+                    type="color"
+                    value={editProject.color}
+                    onChange={(e) => setEditProject({ ...editProject, color: e.target.value })}
+                    className="w-full h-10 px-1 border border-gray-300 rounded-lg"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input
+                  label="Fecha de inicio"
+                  type="date"
+                  value={editProject.startDate}
+                  onChange={(e) => setEditProject({ ...editProject, startDate: e.target.value })}
+                />
+                <Input
+                  label="Fecha de fin"
+                  type="date"
+                  value={editProject.endDate}
+                  onChange={(e) => setEditProject({ ...editProject, endDate: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Producto/Servicio</label>
+                  <select
+                    value={editProject.productId}
+                    onChange={(e) => setEditProject({ ...editProject, productId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900"
+                  >
+                    <option value="">Sin producto</option>
+                    {products.filter(p => p).map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.code} - {product.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Input
+                  label="Precio de venta"
+                  type="number"
+                  step="0.01"
+                  value={editProject.salePrice}
+                  onChange={(e) => setEditProject({ ...editProject, salePrice: e.target.value })}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="flex gap-3 justify-end pt-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setShowEditProject(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit">
+                  Guardar Cambios
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Progress Card */}
       <Card>
@@ -338,7 +658,7 @@ export default function ProjectDetailPage() {
                 placeholder="¿Qué hay que hacer?"
                 required
               />
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Prioridad</label>
                   <select
@@ -366,6 +686,15 @@ export default function ProjectDetailPage() {
                   value={newTask.estimatedHours}
                   onChange={(e) => setNewTask({ ...newTask, estimatedHours: e.target.value })}
                   placeholder="ej: 8"
+                />
+                <Input
+                  label="Coste (€)"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={newTask.cost}
+                  onChange={(e) => setNewTask({ ...newTask, cost: e.target.value })}
+                  placeholder="0.00"
                 />
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Asignar a</label>
@@ -429,7 +758,7 @@ export default function ProjectDetailPage() {
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900"
                         />
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Prioridad</label>
                           <select
@@ -457,6 +786,15 @@ export default function ProjectDetailPage() {
                           value={editTask.estimatedHours}
                           onChange={(e) => setEditTask({ ...editTask, estimatedHours: e.target.value })}
                           placeholder="ej: 8"
+                        />
+                        <Input
+                          label="Coste (€)"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={editTask.cost}
+                          onChange={(e) => setEditTask({ ...editTask, cost: e.target.value })}
+                          placeholder="0.00"
                         />
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Asignar a</label>
@@ -537,6 +875,214 @@ export default function ProjectDetailPage() {
                           onClick={() => handleDeleteTask(task.id)}
                           className="text-red-500 hover:text-red-700 p-1"
                           title="Eliminar tarea"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </Card>
+
+      {/* KPI de Costes y Facturación */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Coste de Personal */}
+        <Card>
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-gray-500">💰 Coste Personal</h3>
+            <p className="text-2xl font-bold text-gray-800">
+              {getStaffCosts().totalHourlyRate.toFixed(2)} €/h
+            </p>
+            <p className="text-xs text-gray-500">
+              {getStaffCosts().staffCount} miembro{getStaffCosts().staffCount !== 1 ? 's' : ''} del equipo
+            </p>
+          </div>
+        </Card>
+
+        {/* Precio de Venta */}
+        <Card>
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-gray-500">💵 Precio de Venta</h3>
+            <p className="text-2xl font-bold text-gray-800">
+              {project.salePrice ? `${parseFloat(project.salePrice.toString()).toFixed(2)} €` : 'No definido'}
+            </p>
+            {project.product && (
+              <p className="text-xs text-gray-500">📦 {project.product.name}</p>
+            )}
+          </div>
+        </Card>
+
+        {/* Margen */}
+        <Card>
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-gray-500">📊 Margen</h3>
+            {project.salePrice && getStaffCosts().totalHourlyRate > 0 ? (
+              <>
+                <p className={`text-2xl font-bold ${
+                  parseFloat(project.salePrice.toString()) > getStaffCosts().totalHourlyRate 
+                    ? 'text-green-600' 
+                    : 'text-red-600'
+                }`}>
+                  {(parseFloat(project.salePrice.toString()) - getStaffCosts().totalHourlyRate).toFixed(2)} €
+                </p>
+                <p className="text-xs text-gray-500">
+                  {((parseFloat(project.salePrice.toString()) - getStaffCosts().totalHourlyRate) / parseFloat(project.salePrice.toString()) * 100).toFixed(1)}% margen
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500">Datos incompletos</p>
+            )}
+          </div>
+        </Card>
+
+        {/* Fechas del Proyecto */}
+        <Card>
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-gray-500">📅 Duración</h3>
+            {project.startDate && project.endDate ? (
+              <>
+                <p className="text-sm text-gray-800">
+                  Inicio: {new Date(project.startDate).toLocaleDateString()}
+                </p>
+                <p className="text-sm text-gray-800">
+                  Fin: {new Date(project.endDate).toLocaleDateString()}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500">Fechas no definidas</p>
+            )}
+          </div>
+        </Card>
+      </div>
+
+      {/* Personal del Proyecto */}
+      <Card>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-gray-800">👥 Equipo del Proyecto</h2>
+            <Button onClick={() => setShowAddStaff(!showAddStaff)}>
+              {showAddStaff ? 'Cancelar' : '+ Agregar Personal'}
+            </Button>
+          </div>
+
+          {/* Formulario Agregar Personal */}
+          {showAddStaff && (
+            <form onSubmit={handleAddStaff} className="bg-gray-50 p-4 rounded-lg space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Usuario *</label>
+                  <select
+                    value={newStaff.userId}
+                    onChange={(e) => setNewStaff({ ...newStaff, userId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900"
+                    required
+                  >
+                    <option value="">Seleccionar usuario...</option>
+                    {users
+                      .filter(u => !project?.staff?.some(s => s.userId === u.id))
+                      .map((user) => (
+                        <option key={user.id} value={user.id}>
+                          {user.name} {user.hourlyRate ? `(${user.hourlyRate}€/h)` : ''}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <Input
+                  label="Coste por Hora (€) *"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={newStaff.hourlyRate}
+                  onChange={(e) => setNewStaff({ ...newStaff, hourlyRate: e.target.value })}
+                  placeholder="ej: 25.00"
+                  required
+                />
+                <Input
+                  label="Rol en el Proyecto"
+                  value={newStaff.role}
+                  onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })}
+                  placeholder="ej: Desarrollador, PM..."
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="secondary" onClick={() => setShowAddStaff(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit">Agregar al Equipo</Button>
+              </div>
+            </form>
+          )}
+
+          {/* Lista de Personal */}
+          <div className="space-y-2">
+            {!project?.staff || project.staff.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <div className="text-4xl mb-2">👤</div>
+                <p>No hay personal asignado. ¡Agrega el primer miembro!</p>
+              </div>
+            ) : (
+              project.staff.map((staff) => (
+                <div key={staff.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                  {editingStaffId === staff.id ? (
+                    <form onSubmit={(e) => handleUpdateStaff(e, staff.id)} className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <Input
+                          label="Coste por Hora (€) *"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={editStaff.hourlyRate}
+                          onChange={(e) => setEditStaff({ ...editStaff, hourlyRate: e.target.value })}
+                          required
+                        />
+                        <Input
+                          label="Rol en el Proyecto"
+                          value={editStaff.role}
+                          onChange={(e) => setEditStaff({ ...editStaff, role: e.target.value })}
+                          placeholder="ej: Desarrollador, PM..."
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button type="button" variant="secondary" onClick={handleCancelEditStaff}>
+                          Cancelar
+                        </Button>
+                        <Button type="submit">Guardar Cambios</Button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-semibold text-gray-800">{staff.user.name}</h3>
+                          {staff.role && (
+                            <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                              {staff.role}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span>📧 {staff.user.email}</span>
+                          <span className="font-semibold text-green-600">
+                            💰 {parseFloat(staff.hourlyRate.toString()).toFixed(2)} €/hora
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleStartEditStaff(staff)}
+                          className="text-blue-500 hover:text-blue-700 p-1"
+                          title="Editar"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDeleteStaff(staff.id)}
+                          className="text-red-500 hover:text-red-700 p-1"
+                          title="Eliminar"
                         >
                           🗑️
                         </button>

@@ -12,6 +12,7 @@ const taskSchema = z.object({
   dueDate: z.string().optional(),
   assignedToId: z.string().optional(),
   estimatedHours: z.number().positive().optional(),
+  cost: z.number().nonnegative().optional(),
 });
 
 // GET - Listar tareas de un proyecto
@@ -115,6 +116,7 @@ export async function POST(request: NextRequest) {
         dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
         assignedToId: validatedData.assignedToId || null,
         estimatedHours: validatedData.estimatedHours || null,
+        cost: validatedData.cost || null,
         order: (lastTask?.order || 0) + 1,
       },
       include: {
