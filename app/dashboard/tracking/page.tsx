@@ -16,6 +16,7 @@ interface Tracking {
   trackingNumber: string;
   description: string;
   status: 'REQUESTED' | 'RECEIVED' | 'PAID' | 'SHIPPED' | 'IN_TRANSIT' | 'DELIVERED';
+  publicToken?: string | null;
   carrier?: string | null;
   origin?: string | null;
   destination?: string | null;
@@ -90,6 +91,7 @@ export default function TrackingPage() {
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
+        console.log('Trackings recibidos:', data);
         setTrackings(data);
       } else {
         console.error('Error al cargar seguimientos');
@@ -239,7 +241,7 @@ export default function TrackingPage() {
                     Acciones
                   </th>
                 </tr>
-              </thead>
+              </thead>                                                                                                                                                                                                          
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredTrackings.length === 0 ? (
                   <tr>
@@ -279,6 +281,23 @@ export default function TrackingPage() {
                         >
                           Ver
                         </Link>
+                        <button
+                          onClick={async () => {
+                            console.log('Tracking completo:', tracking);
+                            console.log('PublicToken:', tracking.publicToken);
+                            if (!tracking.publicToken) {
+                              alert('Este seguimiento no tiene un enlace público. Por favor, actualízalo o crea uno nuevo.');
+                              return;
+                            }
+                            const url = `${window.location.origin}/public/tracking/${tracking.publicToken}`;
+                            await navigator.clipboard.writeText(url);
+                            alert('Enlace copiado al portapapeles');
+                          }}
+                          className="text-green-600 hover:text-green-900 mr-4"
+                          title="Copiar enlace público"
+                        >
+                          🔗
+                        </button>
                         <button
                           onClick={() => handleDelete(tracking.id)}
                           className="text-red-600 hover:text-red-900"

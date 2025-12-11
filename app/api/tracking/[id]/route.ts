@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/jwt';
 import { z } from 'zod';
 
@@ -27,7 +27,15 @@ export async function GET(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const payload = verifyToken(token) as any;
+    const payload = await verifyToken(token);
+    
+    if (!payload || !payload.userId) {
+      return NextResponse.json(
+        { error: 'Usuario no identificado' },
+        { status: 401 }
+      );
+    }
+
     const userId = payload.userId;
 
     const tracking = await prisma.tracking.findFirst({
@@ -185,7 +193,7 @@ export async function PUT(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Datos de entrada inválidos', details: error.errors },
+        { error: 'Datos de entrada inválidos', details: error.issues },
         { status: 400 }
       );
     }

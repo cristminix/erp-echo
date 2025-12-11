@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/jwt';
 import { z } from 'zod';
 
@@ -25,7 +25,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const payload = verifyToken(token) as any;
+    const payload = await verifyToken(token);
+    
+    if (!payload || !payload.userId) {
+      return NextResponse.json(
+        { error: 'Usuario no identificado' },
+        { status: 401 }
+      );
+    }
+
     const userId = payload.userId;
 
     // Obtener parámetros de consulta
@@ -61,7 +69,25 @@ export async function GET(request: NextRequest) {
     // Obtener seguimientos con relaciones
     const trackings = await prisma.tracking.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        trackingNumber: true,
+        description: true,
+        status: true,
+        publicToken: true,
+        carrier: true,
+        origin: true,
+        destination: true,
+        weight: true,
+        requestedDate: true,
+        receivedDate: true,
+        paidDate: true,
+        shippedDate: true,
+        inTransitDate: true,
+        deliveredDate: true,
+        notes: true,
+        createdAt: true,
+        updatedAt: true,
         contact: {
           select: {
             id: true,
@@ -92,7 +118,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const payload = verifyToken(token) as any;
+    const payload = await verifyToken(token);
+    
+    if (!payload || !payload.userId) {
+      return NextResponse.json(
+        { error: 'Usuario no identificado' },
+        { status: 401 }
+      );
+    }
+
     const userId = payload.userId;
 
     const body = await request.json();
@@ -162,7 +196,7 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Datos de entrada inválidos', details: error.errors },
+        { error: 'Datos de entrada inválidos', details: error.issues },
         { status: 400 }
       );
     }

@@ -615,6 +615,7 @@ model Tracking {
   trackingNumber String  // Número de seguimiento único
   description    String  @db.Text
   status         TrackingStatus @default(REQUESTED)
+  publicToken    String? @unique @default(cuid()) // Token único para acceso público
   
   origin         String?  // Origen del envío
   destination    String?  // Destino del envío

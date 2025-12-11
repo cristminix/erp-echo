@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
     });
 
     // Crear respuesta con cookie
