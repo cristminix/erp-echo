@@ -14,6 +14,14 @@ interface Task {
   dueDate: string | null;
 }
 
+interface Attendance {
+  id: string;
+  checkIn: string;
+  checkOut: string | null;
+  hourlyRate: number | null;
+  projectId: string | null;
+}
+
 interface Project {
   id: string;
   name: string;
@@ -32,11 +40,13 @@ interface Project {
 export default function ProjectsPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     fetchProjects();
+    fetchAttendances();
   }, []);
 
   const fetchProjects = async () => {
@@ -66,6 +76,24 @@ export default function ProjectsPage() {
     }
   };
 
+  const fetchAttendances = async () => {
+    try {
+      const companiesRes = await fetch('/api/companies');
+      const companies = await companiesRes.json();
+      const activeCompany = companies.find((c: { active: boolean; id: string }) => c.active);
+
+      if (!activeCompany) return;
+
+      const res = await fetch(`/api/attendance?companyId=${activeCompany.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setAttendances(data);
+      }
+    } catch (error) {
+      console.error('Error fetching attendances:', error);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const styles = {
       ACTIVE: 'bg-green-100 text-green-800',
@@ -88,6 +116,28 @@ export default function ProjectsPage() {
     if (project._count.tasks === 0) return 0;
     const completed = project.tasks.filter(t => t.completed).length;
     return Math.round((completed / project._count.tasks) * 100);
+  };
+
+  const calculateHoursDecimal = (checkIn: string, checkOut: string | null): number => {
+    if (!checkOut) return 0;
+    const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
+    return diff / (1000 * 60 * 60);
+  };
+
+  const getProjectStats = (projectId: string) => {
+    const projectAttendances = attendances.filter(att => att.projectId === projectId);
+    
+    const totalHours = projectAttendances.reduce((sum, att) => 
+      sum + calculateHoursDecimal(att.checkIn, att.checkOut), 0
+    );
+    
+    const totalCost = projectAttendances.reduce((sum, att) => {
+      const hours = calculateHoursDecimal(att.checkIn, att.checkOut);
+      const rate = att.hourlyRate ? Number(att.hourlyRate) : 0;
+      return sum + (hours * rate);
+    }, 0);
+    
+    return { hours: totalHours, cost: totalCost };
   };
 
   if (loading) {
@@ -191,6 +241,23 @@ export default function ProjectsPage() {
                       ></div>
                     </div>
                   </div>
+
+                  {/* KPIs */}
+                  {(() => {
+                    const stats = getProjectStats(project.id);
+                    return (
+                      <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <div className="text-xs text-blue-600 font-medium mb-1">⏱️ Horas</div>
+                          <div className="text-lg font-bold text-blue-900">{stats.hours.toFixed(1)}h</div>
+                        </div>
+                        <div className="bg-teal-50 p-3 rounded-lg">
+                          <div className="text-xs text-teal-600 font-medium mb-1">💰 Coste</div>
+                          <div className="text-lg font-bold text-teal-900">{stats.cost.toFixed(0)} €</div>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Stats */}
                   <div className="flex items-center justify-between text-sm text-gray-600 pt-2 border-t">

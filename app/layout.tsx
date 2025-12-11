@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Sistema ERP",
+  title: "FalconERP",
   description: "Sistema de gestión empresarial para empresas",
 };
 

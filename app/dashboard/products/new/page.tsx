@@ -49,16 +49,11 @@ export default function NewProductPage() {
       // Crear FormData
       const formDataUpload = new FormData();
       formDataUpload.append('file', file);
-
-      // Obtener token
-      const token = localStorage.getItem('token');
       
-      // Subir imagen
+      // Subir imagen (usa cookies para autenticación)
       const res = await fetch('/api/upload', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include',
         body: formDataUpload,
       });
 

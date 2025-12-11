@@ -15,14 +15,9 @@ const taskSchema = z.object({
 // GET - Listar tareas de un proyecto
 export async function GET(request: NextRequest) {
   try {
-    const payload = await verifyAuth(request);
-    if (!payload) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
-
-    const effectiveUserId = await getEffectiveUserId(payload.userId);
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId');
+    const publicAccess = searchParams.get('public') === 'true';
 
     if (!projectId) {
       return NextResponse.json(
@@ -30,6 +25,33 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Si es acceso público, solo devolver título e ID de tareas no completadas
+    if (publicAccess) {
+      const tasks = await prisma.task.findMany({
+        where: {
+          projectId,
+          completed: false,
+        },
+        select: {
+          id: true,
+          title: true,
+        },
+        orderBy: [
+          { order: 'asc' },
+        ],
+      });
+
+      return NextResponse.json(tasks);
+    }
+
+    // Para acceso autenticado, devolver información completa
+    const payload = await verifyAuth(request);
+    if (!payload) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
 
     const tasks = await prisma.task.findMany({
       where: {

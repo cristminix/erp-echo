@@ -22,6 +22,12 @@ model User {
   verificationCode String? // Código de verificación de 6 dígitos
   verificationCodeExpiry DateTime? // Expiración del código
   
+  // Token para registro de asistencia desde móvil
+  attendanceToken String? @unique // Token único para acceder desde móvil
+  
+  // Coste por hora para cálculo de asistencia
+  hourlyRate Decimal? @db.Decimal(10, 2) // Coste por hora del empleado
+  
   // Usuario que lo creó (null si es el usuario principal registrado)
   createdById String?
   createdBy   User?    @relation("UserCreator", fields: [createdById], references: [id], onDelete: Cascade)
@@ -43,6 +49,7 @@ model User {
   attendances Attendance[]
   projects  Project[]
   tasks     Task[]
+  trackings Tracking[]
 }
 
 model Company {
@@ -111,6 +118,7 @@ model Company {
   defaultUsers User[] @relation("DefaultCompany")
   crmPipelines CrmPipeline[]
   crmOpportunities CrmOpportunity[]
+  trackings Tracking[]
   
   @@index([userId])
   @@index([userId, active])
@@ -146,6 +154,7 @@ model Contact {
   
   invoices    Invoice[]
   crmOpportunities CrmOpportunity[]
+  trackings   Tracking[]
   
   @@index([userId])
   @@index([companyId])
@@ -273,6 +282,9 @@ model InvoiceItem {
   productId   String?
   product     Product? @relation(fields: [productId], references: [id])
   
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
   // Datos del item
   description String
   quantity    Float
@@ -288,6 +300,7 @@ model InvoiceItem {
   
   @@index([invoiceId])
   @@index([productId])
+  @@index([projectId])
 }
 
 model InvoiceAttachment {
@@ -330,9 +343,18 @@ model Attendance {
   companyId   String
   company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  taskId      String?
+  task        Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  
   date        DateTime @default(now())
   checkIn     DateTime @default(now())
   checkOut    DateTime?
+  
+  // Snapshot del coste/hora en el momento del registro
+  hourlyRate  Decimal? @db.Decimal(10, 2)
   
   notes       String?
   
@@ -341,6 +363,8 @@ model Attendance {
   
   @@index([userId])
   @@index([companyId])
+  @@index([projectId])
+  @@index([taskId])
   @@index([date])
 }
 
@@ -378,6 +402,8 @@ model Project {
   updatedAt   DateTime @updatedAt
   
   tasks       Task[]
+  attendances Attendance[]
+  invoiceItems InvoiceItem[]
   
   @@index([userId])
   @@index([companyId])
@@ -411,6 +437,8 @@ model Task {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  attendances Attendance[]
   
   @@index([userId])
   @@index([projectId])
@@ -571,4 +599,53 @@ enum ActivityType {
   MEETING     // Reunión
   TASK        // Tarea
   NOTE        // Nota
+}
+
+model Tracking {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  contactId   String?
+  contact     Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  
+  trackingNumber String  // Número de seguimiento único
+  description    String  @db.Text
+  status         TrackingStatus @default(REQUESTED)
+  
+  origin         String?  // Origen del envío
+  destination    String?  // Destino del envío
+  
+  carrier        String?  // Transportista (DHL, FedEx, etc.)
+  weight         Float?   // Peso del paquete
+  
+  requestedDate  DateTime @default(now())
+  receivedDate   DateTime?
+  paidDate       DateTime?
+  shippedDate    DateTime?
+  inTransitDate  DateTime?
+  deliveredDate  DateTime?
+  
+  notes          String?  @db.Text
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([companyId])
+  @@index([contactId])
+  @@index([status])
+  @@index([trackingNumber])
+}
+
+enum TrackingStatus {
+  REQUESTED       // Solicitado
+  RECEIVED        // Recibido en Oficina
+  PAID            // Pagado
+  SHIPPED         // Enviado
+  IN_TRANSIT      // En Tránsito
+  DELIVERED       // Llegó
 }

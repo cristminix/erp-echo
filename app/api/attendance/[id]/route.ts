@@ -53,20 +53,37 @@ export async function PUT(
     }
 
     const data = await req.json();
-    const { checkOut, notes } = data;
+    const { checkIn, checkOut, notes, projectId, taskId } = data;
+
+    const updateData: any = {};
+    if (checkIn !== undefined) updateData.checkIn = new Date(checkIn);
+    if (checkOut !== undefined) updateData.checkOut = checkOut ? new Date(checkOut) : null;
+    if (notes !== undefined) updateData.notes = notes;
+    if (projectId !== undefined) updateData.projectId = projectId || null;
+    if (taskId !== undefined) updateData.taskId = taskId || null;
 
     const attendance = await prisma.attendance.update({
       where: { id: params.id },
-      data: {
-        checkOut: checkOut ? new Date(checkOut) : undefined,
-        notes: notes !== undefined ? notes : undefined,
-      },
+      data: updateData,
       include: {
         user: {
           select: {
             id: true,
             name: true,
             email: true,
+            hourlyRate: true,
+          },
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        task: {
+          select: {
+            id: true,
+            title: true,
           },
         },
       },

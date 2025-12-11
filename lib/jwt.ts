@@ -8,6 +8,7 @@ export interface JWTPayload {
   userId: string;
   email: string;
   name: string;
+  role: string;
   iat?: number;
   exp?: number;
 }
@@ -29,6 +30,7 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
       userId: payload.userId as string,
       email: payload.email as string,
       name: payload.name as string,
+      role: payload.role as string,
       iat: payload.iat,
       exp: payload.exp,
     };

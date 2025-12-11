@@ -42,12 +42,26 @@ export async function GET(req: NextRequest) {
             id: true,
             name: true,
             email: true,
+            hourlyRate: true,
+          },
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        task: {
+          select: {
+            id: true,
+            title: true,
           },
         },
       },
-      orderBy: {
-        date: 'desc',
-      },
+      orderBy: [
+        { date: 'desc' },
+        { checkIn: 'desc' }
+      ],
     });
 
     return NextResponse.json(attendances);
@@ -69,7 +83,7 @@ export async function POST(req: NextRequest) {
 
     const data = await req.json();
     console.log('Datos recibidos:', data);
-    const { companyId, userId, checkIn, checkOut, notes, date } = data;
+    const { companyId, userId, checkIn, checkOut, notes, date, projectId, taskId } = data;
 
     if (!companyId || !userId) {
       return NextResponse.json(
@@ -102,6 +116,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Obtener el hourlyRate del usuario
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { hourlyRate: true }
+    });
+
     // Crear las fechas correctamente
     const attendanceDate = date ? new Date(date) : new Date();
     const checkInDate = checkIn ? new Date(checkIn) : new Date();
@@ -110,7 +130,8 @@ export async function POST(req: NextRequest) {
     console.log('Fechas a guardar:', {
       date: attendanceDate,
       checkIn: checkInDate,
-      checkOut: checkOutDate
+      checkOut: checkOutDate,
+      hourlyRate: user?.hourlyRate
     });
 
     const attendance = await prisma.attendance.create({
@@ -120,7 +141,10 @@ export async function POST(req: NextRequest) {
         date: attendanceDate,
         checkIn: checkInDate,
         checkOut: checkOutDate,
+        hourlyRate: user?.hourlyRate || null,
         notes: notes || null,
+        projectId: projectId || null,
+        taskId: taskId || null,
       },
       include: {
         user: {
@@ -128,6 +152,7 @@ export async function POST(req: NextRequest) {
             id: true,
             name: true,
             email: true,
+            hourlyRate: true,
           },
         },
       },

@@ -1,0 +1,323 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+
+interface Company {
+  id: string;
+  name: string;
+  primaryColor: string;
+  secondaryColor: string;
+  logo: string | null;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface TodayAttendance {
+  id: string;
+  checkIn: string;
+  checkOut: string | null;
+  notes: string | null;
+}
+
+interface AttendanceData {
+  user: User;
+  company: Company;
+  todayAttendance: TodayAttendance | null;
+}
+
+export default function AttendanceMobilePage() {
+  const params = useParams();
+  const token = params?.token as string;
+  
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<AttendanceData | null>(null);
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState('');
+  const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    if (token) {
+      fetchAttendanceData();
+    }
+  }, [token]);
+
+  const fetchAttendanceData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const res = await fetch(`/api/public/attendance/${token}`);
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        setError(errorData.error || 'Error al cargar los datos');
+        return;
+      }
+
+      const data = await res.json();
+      setData(data);
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Error de conexión');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAction = async (action: 'check-in' | 'check-out') => {
+    try {
+      setSubmitting(true);
+      setError('');
+      setSuccess('');
+
+      const res = await fetch(`/api/public/attendance/${token}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action,
+          notes: notes.trim() || null
+        })
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setError(result.error || 'Error al registrar');
+        return;
+      }
+
+      setSuccess(result.message);
+      setNotes('');
+      
+      // Recargar datos
+      setTimeout(() => {
+        fetchAttendanceData();
+        setSuccess('');
+      }, 1500);
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Error de conexión');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
+            <p className="mt-4 text-gray-600">Cargando...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !data) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full">
+          <div className="text-center">
+            <div className="text-6xl mb-4">❌</div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Error</h1>
+            <p className="text-gray-600">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const primaryColor = data.company.primaryColor || '#0284c7';
+  // Determinar si hay un registro abierto (entrada sin salida)
+  const hasOpenAttendance = data.todayAttendance && !data.todayAttendance.checkOut;
+  const hasClosedAttendance = data.todayAttendance && data.todayAttendance.checkOut;
+
+  return (
+    <div 
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        background: `linear-gradient(to bottom right, ${primaryColor}15, ${primaryColor}05)`
+      }}
+    >
+      <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full">
+        {/* Header con logo y empresa */}
+        <div className="text-center mb-8">
+          {data.company.logo ? (
+            <img 
+              src={data.company.logo} 
+              alt={data.company.name}
+              className="h-16 w-auto mx-auto mb-4"
+            />
+          ) : (
+            <div 
+              className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+              style={{ backgroundColor: primaryColor }}
+            >
+              <span className="text-white text-2xl font-bold">
+                {data.company.name.charAt(0)}
+              </span>
+            </div>
+          )}
+          <h1 className="text-2xl font-bold text-gray-800">{data.company.name}</h1>
+          <p className="text-gray-600 mt-1">Control de Asistencia</p>
+        </div>
+
+        {/* Información del usuario */}
+        <div className="bg-gray-50 rounded-2xl p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+              style={{ backgroundColor: primaryColor }}
+            >
+              {data.user.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="font-semibold text-gray-800">{data.user.name}</p>
+              <p className="text-sm text-gray-600">{data.user.email}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Estado actual */}
+        {data.todayAttendance && (
+          <div className={`${hasOpenAttendance ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'} border-2 rounded-2xl p-4 mb-6`}>
+            <div className="flex items-start gap-3">
+              <div className="text-2xl">{hasOpenAttendance ? '🟢' : '✅'}</div>
+              <div className="flex-1">
+                <p className="font-semibold text-gray-800 mb-1">
+                  {hasOpenAttendance ? 'Registro Activo' : 'Último Registro'}
+                </p>
+                <div className="space-y-1 text-sm">
+                  <p className="text-gray-600">
+                    <span className="font-medium">Entrada:</span>{' '}
+                    {new Date(data.todayAttendance.checkIn).toLocaleTimeString('es-ES', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                  {data.todayAttendance.checkOut && (
+                    <p className="text-gray-600">
+                      <span className="font-medium">Salida:</span>{' '}
+                      {new Date(data.todayAttendance.checkOut).toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mensajes de éxito/error */}
+        {success && (
+          <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 mb-6 text-center">
+            <p className="text-green-800 font-semibold">{success}</p>
+          </div>
+        )}
+
+        {error && data && (
+          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 mb-6 text-center">
+            <p className="text-red-800">{error}</p>
+          </div>
+        {/* Notas */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Notas (opcional)
+          </label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Agregar nota..."
+            rows={3}
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          />
+        </div>
+
+        {/* Botones de acción */}
+        <div className="space-y-3">
+          {/* Mostrar botón de ENTRADA si no hay registro abierto */}
+          {!hasOpenAttendance && (
+            <button
+              onClick={() => handleAction('check-in')}
+              disabled={submitting}
+              className="w-full py-4 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              style={{ backgroundColor: primaryColor }}
+            >
+              {submitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Procesando...
+                </>
+              ) : (
+                <>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                  Registrar Entrada
+                </>
+              )}
+            </button>
+          )}
+
+          {/* Mostrar botón de SALIDA si hay un registro abierto */}
+          {hasOpenAttendance && (
+            <button
+              onClick={() => handleAction('check-out')}
+              disabled={submitting}
+              className="w-full py-4 bg-gradient-to-r from-red-500 to-orange-500 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {submitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Procesando...
+                </>
+              ) : (
+                <>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Registrar Salida
+                </>
+              )}
+            </button>
+          )}  <p className="text-sm text-gray-600 mt-1">Has completado tu jornada de hoy</p>
+            </div>
+          )}
+        </div>
+
+        {/* Hora actual */}
+        <div className="mt-8 text-center">
+          <p className="text-4xl font-bold text-gray-800">
+            {new Date().toLocaleTimeString('es-ES', {
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </p>
+          <p className="text-sm text-gray-600 mt-1">
+            {new Date().toLocaleDateString('es-ES', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric'
+            })}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

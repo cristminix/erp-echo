@@ -31,8 +31,13 @@ export default function EditUserPage() {
   const [saving, setSaving] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [attendanceToken, setAttendanceToken] = useState('');
+  const [attendanceUrl, setAttendanceUrl] = useState('');
+  const [loadingToken, setLoadingToken] = useState(false);
+  const [showQR, setShowQR] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -41,6 +46,7 @@ export default function EditUserPage() {
     active: true,
     defaultCompanyId: '',
     avatar: '',
+    hourlyRate: '',
   });
 
   useEffect(() => {
@@ -50,8 +56,8 @@ export default function EditUserPage() {
   const fetchData = async () => {
     try {
       const [userRes, companiesRes] = await Promise.all([
-        fetch(`/api/users/${userId}`),
-        fetch('/api/companies'),
+        fetch(`/api/users/${userId}`, { credentials: 'include' }),
+        fetch('/api/companies', { credentials: 'include' }),
       ]);
 
       if (userRes.ok && companiesRes.ok) {
@@ -68,10 +74,13 @@ export default function EditUserPage() {
           active: userData.active,
           defaultCompanyId: userData.defaultCompanyId || '',
           avatar: userData.avatar || '',
+          hourlyRate: userData.hourlyRate || '',
         });
         if (userData.avatar) {
           setAvatarPreview(userData.avatar);
         }
+        // Intentar obtener el token de asistencia
+        fetchAttendanceToken(userId);
       } else {
         setError('Error al cargar el usuario');
       }
@@ -81,6 +90,61 @@ export default function EditUserPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchAttendanceToken = async (id: string) => {
+    try {
+      const res = await fetch(`/api/users/${id}/attendance-token`, {
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAttendanceToken(data.token);
+        setAttendanceUrl(data.url);
+      }
+    } catch (error) {
+      // Token no existe aún, no es un error
+      console.log('Token de asistencia no generado todavía');
+    }
+  };
+
+  const generateAttendanceToken = async () => {
+    if (!userId) {
+      setError('Error: Usuario no identificado');
+      return;
+    }
+    
+    setLoadingToken(true);
+    setError('');
+    
+    try {
+      const res = await fetch(`/api/users/${userId}/attendance-token`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setAttendanceToken(data.token);
+        setAttendanceUrl(data.url);
+        setSuccess('URL de asistencia generada correctamente');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Error al generar URL de asistencia');
+      }
+    } catch (error) {
+      console.error('Error generating token:', error);
+      setError('Error al generar URL de asistencia');
+    } finally {
+      setLoadingToken(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setSuccess('URL copiada al portapapeles');
+    setTimeout(() => setSuccess(''), 2000);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,6 +160,7 @@ export default function EditUserPage() {
         active: formData.active,
         defaultCompanyId: formData.defaultCompanyId || undefined,
         avatar: formData.avatar || undefined,
+        hourlyRate: formData.hourlyRate ? parseFloat(formData.hourlyRate) : undefined,
       };
 
       // Solo incluir password si se proporcionó uno nuevo
@@ -363,6 +428,19 @@ export default function EditUserPage() {
               </p>
             </div>
 
+            <Input
+              label="Coste por Hora (€)"
+              name="hourlyRate"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.hourlyRate}
+              onChange={handleChange}
+              disabled={isPrincipalUser}
+              placeholder="Ej: 15.50"
+              helperText="Coste por hora del empleado para calcular el importe de asistencia"
+            />
+
             <div className="flex items-center">
               <input
                 type="checkbox"
@@ -413,6 +491,142 @@ export default function EditUserPage() {
             </Button>
           </div>
         </form>
+      </Card>
+
+      {/* Sección de Acceso Móvil para Asistencia */}
+      <Card>
+        <div className="flex items-start gap-3 mb-4">
+          <svg className="w-6 h-6 text-teal-600 shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <div className="flex-1">
+            <h3 className="text-xl font-semibold text-gray-800">Acceso Móvil - Registro de Asistencia</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Genera una URL única para que este usuario registre sus entradas y salidas desde su teléfono móvil
+            </p>
+          </div>
+        </div>
+
+        {success && (
+          <div className="mb-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+            {success}
+          </div>
+        )}
+
+        {!attendanceUrl ? (
+          <div className="text-center py-8">
+            <div className="text-6xl mb-4">📱</div>
+            <p className="text-gray-600 mb-6">
+              Genera una URL personalizada para que {formData.name || 'el usuario'} registre su asistencia desde cualquier dispositivo
+            </p>
+            <Button
+              type="button"
+              onClick={generateAttendanceToken}
+              disabled={loadingToken}
+              className="mx-auto"
+            >
+              {loadingToken ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Generando...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Generar URL de Acceso
+                </>
+              )}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
+              <p className="text-sm font-medium text-teal-800 mb-2">URL de Asistencia:</p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={attendanceUrl}
+                  readOnly
+                  className="flex-1 px-3 py-2 bg-white border border-teal-200 rounded text-sm text-gray-700 font-mono"
+                />
+                <button
+                  onClick={() => copyToClipboard(attendanceUrl)}
+                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded transition-colors"
+                  title="Copiar URL"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="text-sm text-blue-800">
+                  <p className="font-semibold mb-1">¿Cómo usar esta URL?</p>
+                  <ul className="space-y-1 list-disc list-inside">
+                    <li>Comparte la URL con el usuario por WhatsApp, email, etc.</li>
+                    <li>El usuario puede guardar la página en su pantalla de inicio</li>
+                    <li>Podrá registrar entrada y salida sin necesidad de iniciar sesión</li>
+                    <li>Los registros aparecerán automáticamente en el menú de asistencia</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <a
+                href={attendanceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 px-4 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium text-center transition-colors flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Abrir URL
+              </a>
+              <button
+                onClick={() => setShowQR(!showQR)}
+                className="px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                </svg>
+                {showQR ? 'Ocultar' : 'Mostrar'} QR
+              </button>
+              <button
+                onClick={generateAttendanceToken}
+                disabled={loadingToken}
+                className="px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                title="Regenerar URL (la anterior dejará de funcionar)"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            </div>
+
+            {showQR && (
+              <div className="text-center py-6 bg-white border-2 border-gray-200 rounded-lg">
+                <p className="text-sm text-gray-600 mb-4">Escanea este código QR con el móvil</p>
+                <div className="inline-block p-4 bg-white">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(attendanceUrl)}`}
+                    alt="QR Code"
+                    className="w-48 h-48 mx-auto"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </Card>
     </div>
   );

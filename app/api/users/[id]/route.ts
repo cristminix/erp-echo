@@ -12,6 +12,7 @@ const updateUserSchema = z.object({
   defaultCompanyId: z.string().nullable().optional(),
   active: z.boolean().optional(),
   avatar: z.string().optional(),
+  hourlyRate: z.number().nonnegative().optional(),
 });
 
 // GET /api/users/[id] - Obtener usuario por ID

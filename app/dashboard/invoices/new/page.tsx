@@ -21,8 +21,14 @@ interface Product {
   tax: number;
 }
 
+interface Project {
+  id: string;
+  name: string;
+}
+
 interface InvoiceItem {
   productId?: string;
+  projectId?: string;
   description: string;
   quantity: number;
   price: number;
@@ -40,6 +46,7 @@ export default function NewInvoicePage() {
   const [activeCompany, setActiveCompany] = useState<any>(null);
   const [clients, setClients] = useState<Contact[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   
   // Función para calcular fecha de vencimiento (1 mes después)
   const calculateDueDate = (invoiceDate: string): string => {
@@ -63,6 +70,7 @@ export default function NewInvoicePage() {
   const [items, setItems] = useState<InvoiceItem[]>([
     {
       productId: '',
+      projectId: '',
       description: '',
       quantity: 1,
       price: 0,
@@ -88,6 +96,7 @@ export default function NewInvoicePage() {
           setFormData(prev => ({ ...prev, currency: active.currency || 'EUR' }));
           fetchClients(active.id);
           fetchProducts(active.id);
+          fetchProjects(active.id);
         } else {
           setError('No hay empresa activa');
           setLoading(false);
@@ -119,6 +128,20 @@ export default function NewInvoicePage() {
       if (res.ok) {
         const data = await res.json();
         setProducts(data);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProjects = async (companyId: string) => {
+    try {
+      const res = await fetch(`/api/projects?companyId=${companyId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setProjects(data);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -174,6 +197,7 @@ export default function NewInvoicePage() {
       ...items,
       {
         productId: '',
+        projectId: '',
         description: '',
         quantity: 1,
         price: 0,
@@ -246,6 +270,7 @@ export default function NewInvoicePage() {
           notes: formData.notes,
           items: items.map(item => ({
             productId: item.productId || undefined,
+            projectId: item.projectId || undefined,
             description: item.description,
             quantity: item.quantity,
             price: item.price,
@@ -423,7 +448,7 @@ export default function NewInvoicePage() {
             {items.map((item, index) => (
               <div key={index} className="border border-gray-200 rounded-lg p-4">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                  <div className="md:col-span-3">
+                  <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Producto
                     </label>
@@ -441,7 +466,25 @@ export default function NewInvoicePage() {
                     </select>
                   </div>
 
-                  <div className="md:col-span-3">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Proyecto
+                    </label>
+                    <select
+                      value={item.projectId || ''}
+                      onChange={(e) => handleItemChange(index, 'projectId', e.target.value)}
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-teal-500 bg-white text-gray-900"
+                    >
+                      <option value="">Sin proyecto</option>
+                      {projects.map((project) => (
+                        <option key={project.id} value={project.id}>
+                          {project.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Descripción *
                     </label>

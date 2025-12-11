@@ -17,14 +17,9 @@ const projectSchema = z.object({
 // GET - Listar proyectos
 export async function GET(request: NextRequest) {
   try {
-    const payload = await verifyAuth(request);
-    if (!payload) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
-    }
-
-    const effectiveUserId = await getEffectiveUserId(payload.userId);
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
+    const publicAccess = searchParams.get('public') === 'true';
 
     if (!companyId) {
       return NextResponse.json(
@@ -32,6 +27,32 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Si es acceso público, solo devolver nombre e ID
+    if (publicAccess) {
+      const projects = await prisma.project.findMany({
+        where: {
+          companyId,
+          active: true,
+          status: 'ACTIVE',
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return NextResponse.json(projects);
+    }
+
+    // Para acceso autenticado, devolver información completa
+    const payload = await verifyAuth(request);
+    if (!payload) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    const effectiveUserId = await getEffectiveUserId(payload.userId);
 
     const projects = await prisma.project.findMany({
       where: {

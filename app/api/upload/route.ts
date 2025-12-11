@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
-import { verifyToken } from '@/lib/jwt'
+import { verifyAuth } from '@/lib/jwt'
 
 // Tamaños máximos en bytes
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
@@ -9,15 +9,10 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'im
 
 export async function POST(req: NextRequest) {
   try {
-    // Verificar autenticación
-    const token = req.headers.get('authorization')?.replace('Bearer ', '')
-    if (!token) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-    }
-
-    const payload = await verifyToken(token)
+    // Verificar autenticación desde cookies
+    const payload = await verifyAuth(req)
     if (!payload) {
-      return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
     // Obtener el archivo del form data

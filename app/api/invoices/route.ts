@@ -8,6 +8,7 @@ import { createOdooInvoice } from '@/lib/odoo-invoice';
 // Schema de validación para items de factura
 const invoiceItemSchema = z.object({
   productId: z.string().optional(),
+  projectId: z.string().optional(),
   description: z.string().min(1, 'La descripción es requerida'),
   quantity: z.number().min(0.01, 'La cantidad debe ser mayor a 0'),
   price: z.number().min(0, 'El precio debe ser mayor o igual a 0'),
