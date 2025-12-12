@@ -14,6 +14,7 @@ export async function middleware(request: NextRequest) {
     '/verify-email',
     '/blog',
     '/upload',
+    '/public',
     '/',
   ];
 
