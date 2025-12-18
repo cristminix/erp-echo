@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { BookOpenIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 interface Account {
@@ -28,6 +29,7 @@ interface JournalEntry {
 }
 
 export default function EntriesPage() {
+  const router = useRouter();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,12 +71,15 @@ export default function EntriesPage() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Asientos cargados:', data);
         setEntries(data);
       } else {
         console.error('Error loading entries:', await response.text());
+        alert('Error al cargar los asientos contables');
       }
     } catch (error) {
       console.error('Error loading entries:', error);
+      alert('Error al cargar los asientos: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setLoading(false);
     }
@@ -147,103 +152,59 @@ export default function EntriesPage() {
           </div>
         </div>
       ) : (
-        <div className="space-y-4">
-          {entries.map((entry) => {
-            const totalDebit = getTotalDebit(entry.lines);
-            const totalCredit = getTotalCredit(entry.lines);
-            
-            return (
-              <div key={entry.id} className="bg-white rounded-lg shadow overflow-hidden">
-                {/* Cabecera del asiento */}
-                <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-4">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          Asiento #{entry.number}
-                        </h3>
-                        {entry.reference && (
-                          <span className="text-sm text-gray-500">
-                            Ref: {entry.reference}
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-1 text-sm text-gray-600">
-                        {entry.description}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-gray-500">
-                        Fecha: {formatDate(entry.date)}
-                      </div>
-                      <div className="mt-1 text-lg font-semibold text-gray-900">
-                        €{formatCurrency(totalDebit)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Líneas del asiento */}
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Cuenta
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Descripción
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Debe
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Haber
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {entry.lines.map((line) => (
-                        <tr key={line.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
-                              {line.account.code}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {line.account.name}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900">
-                              {line.description || '-'}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                            {Number(line.debit) > 0 ? `€${formatCurrency(Number(line.debit))}` : '-'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                            {Number(line.credit) > 0 ? `€${formatCurrency(Number(line.credit))}` : '-'}
-                          </td>
-                        </tr>
-                      ))}
-                      {/* Totales */}
-                      <tr className="bg-gray-50 font-semibold">
-                        <td colSpan={2} className="px-6 py-4 text-right text-sm text-gray-900">
-                          TOTALES:
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                          €{formatCurrency(totalDebit)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                          €{formatCurrency(totalCredit)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            );
-          })}
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Número
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Fecha
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Referencia
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Descripción
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {entries.map((entry) => {
+                const totalDebit = getTotalDebit(entry.lines);
+                
+                return (
+                  <tr 
+                    key={entry.id}
+                    onClick={() => router.push(`/dashboard/accounting/entries/${entry.id}`)}
+                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-sm font-medium text-gray-900">
+                        #{entry.number}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatDate(entry.date)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {entry.reference || '-'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {entry.description}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
+                      €{formatCurrency(totalDebit)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

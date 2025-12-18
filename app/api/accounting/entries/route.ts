@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { verifyAuth } from '@/lib/jwt';
 import { getEffectiveUserId } from '@/lib/user-helpers';
 
@@ -89,8 +89,6 @@ export async function POST(req: NextRequest) {
     const effectiveUserId = await getEffectiveUserId(payload.userId);
     const body = await req.json();
 
-    console.log('Body recibido:', JSON.stringify(body, null, 2));
-
     // Convertir strings a números para debit y credit
     const processedBody = {
       ...body,
@@ -162,7 +160,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Datos inválidos', details: error.errors },
+        { error: 'Datos inválidos', details: error.issues },
         { status: 400 }
       );
     }

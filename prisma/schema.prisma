@@ -61,6 +61,17 @@ model User {
   accounts  Account[]
   taxes     Tax[]
   journalEntries JournalEntry[]
+  
+  // Comunicación (Slack clone)
+  createdWorkspaces Workspace[] @relation("WorkspaceCreator")
+  workspaceMemberships WorkspaceMember[] @relation("WorkspaceMembership")
+  createdChannels Channel[] @relation("ChannelCreator")
+  channelMemberships ChannelMember[] @relation("ChannelMembership")
+  sentMessages Message[] @relation("MessageSender")
+  messageReactions MessageReaction[] @relation("MessageReactionUser")
+  directMessageParticipations DirectMessageParticipant[] @relation("DMParticipant")
+  messageMentions MessageMention[] @relation("MessageMentionUser")
+  pinnedMessages PinnedMessage[] @relation("MessagePinner")
 }
 
 model Company {
@@ -142,6 +153,7 @@ model Company {
   accounts  Account[]
   taxes     Tax[]
   journalEntries JournalEntry[]
+  workspaces Workspace[]
   
   @@index([userId])
   @@index([userId, active])
@@ -1153,4 +1165,223 @@ model JournalEntryLine {
   
   @@index([journalEntryId])
   @@index([accountId])
+}
+
+// ============================================
+// SISTEMA DE COMUNICACIÓN (SLACK CLONE)
+// ============================================
+
+model Workspace {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique // URL amigable
+  icon        String?   // Emoji o URL de icono
+  
+  companyId   String?
+  company     Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  
+  createdBy   String
+  creator     User      @relation("WorkspaceCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  
+  channels    Channel[]
+  members     WorkspaceMember[]
+  directMessages DirectMessage[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([companyId])
+  @@index([createdBy])
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  userId      String
+  user        User      @relation("WorkspaceMembership", fields: [userId], references: [id], onDelete: Cascade)
+  
+  role        String    @default("member") // admin, member
+  status      String    @default("active") // active, away, offline
+  
+  joinedAt    DateTime  @default(now())
+  
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+model Channel {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  name        String
+  description String?   @db.Text
+  topic       String?   @db.Text
+  isPrivate   Boolean   @default(false)
+  
+  createdBy   String
+  creator     User      @relation("ChannelCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  
+  members     ChannelMember[]
+  messages    Message[]
+  pinnedMessages PinnedMessage[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@index([createdBy])
+}
+
+model ChannelMember {
+  id        String    @id @default(cuid())
+  channelId String
+  channel   Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User      @relation("ChannelMembership", fields: [userId], references: [id], onDelete: Cascade)
+  
+  role      String    @default("member") // admin, member
+  
+  lastReadAt DateTime?
+  joinedAt  DateTime  @default(now())
+  
+  @@unique([channelId, userId])
+  @@index([channelId])
+  @@index([userId])
+}
+
+model Message {
+  id        String    @id @default(cuid())
+  
+  channelId String?
+  channel   Channel?  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  
+  directMessageId String?
+  directMessage   DirectMessage? @relation(fields: [directMessageId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User      @relation("MessageSender", fields: [userId], references: [id], onDelete: Cascade)
+  
+  content   String    @db.Text
+  
+  parentId  String?   // Para threads/replies
+  parent    Message?  @relation("MessageThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Message[] @relation("MessageThread")
+  
+  edited    Boolean   @default(false)
+  editedAt  DateTime?
+  
+  reactions MessageReaction[]
+  attachments Attachment[]
+  mentions  MessageMention[]
+  pinnedMessages PinnedMessage[]
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  @@index([channelId])
+  @@index([directMessageId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt])
+}
+
+model MessageReaction {
+  id        String    @id @default(cuid())
+  messageId String
+  message   Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User      @relation("MessageReactionUser", fields: [userId], references: [id], onDelete: Cascade)
+  
+  emoji     String    // Emoji unicode o nombre
+  
+  createdAt DateTime  @default(now())
+  
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@index([userId])
+}
+
+model Attachment {
+  id        String    @id @default(cuid())
+  messageId String
+  message   Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  filename  String
+  url       String
+  mimeType  String?
+  size      Int?      // Tamaño en bytes
+  
+  createdAt DateTime  @default(now())
+  
+  @@index([messageId])
+}
+
+model DirectMessage {
+  id        String    @id @default(cuid())
+  workspaceId String
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  participants DirectMessageParticipant[]
+  messages  Message[]
+  
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  
+  @@index([workspaceId])
+}
+
+model DirectMessageParticipant {
+  id              String         @id @default(cuid())
+  directMessageId String
+  directMessage   DirectMessage  @relation(fields: [directMessageId], references: [id], onDelete: Cascade)
+  
+  userId          String
+  user            User           @relation("DMParticipant", fields: [userId], references: [id], onDelete: Cascade)
+  
+  lastReadAt      DateTime?
+  
+  @@unique([directMessageId, userId])
+  @@index([directMessageId])
+  @@index([userId])
+}
+
+model MessageMention {
+  id        String    @id @default(cuid())
+  messageId String
+  message   Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User      @relation("MessageMentionUser", fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime  @default(now())
+  
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+}
+
+model PinnedMessage {
+  id        String    @id @default(cuid())
+  channelId String
+  channel   Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  
+  messageId String
+  message   Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  pinnedBy  String
+  pinner    User      @relation("MessagePinner", fields: [pinnedBy], references: [id], onDelete: Cascade)
+  
+  pinnedAt  DateTime  @default(now())
+  
+  @@unique([channelId, messageId])
+  @@index([channelId])
+  @@index([messageId])
+  @@index([pinnedBy])
 }
