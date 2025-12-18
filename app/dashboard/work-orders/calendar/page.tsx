@@ -52,7 +52,6 @@ export default function WorkOrdersCalendarPage() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
   const [viewMode, setViewMode] = useState<ViewMode>('month');
 
   // Obtener días de la semana actual
@@ -178,8 +177,6 @@ export default function WorkOrdersCalendarPage() {
         return;
       }
 
-      setSelectedCompanyId(activeCompany.id);
-
       const response = await fetch(`/api/work-orders?companyId=${activeCompany.id}`);
       if (!response.ok) {
         throw new Error('Error al cargar órdenes de trabajo');
@@ -276,19 +273,6 @@ export default function WorkOrdersCalendarPage() {
         return 'bg-green-100 text-green-800 border-green-300';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return 'Pendiente';
-      case 'IN_PROGRESS':
-        return 'En Progreso';
-      case 'COMPLETED':
-        return 'Completada';
-      default:
-        return status;
     }
   };
 
