@@ -38,13 +38,8 @@ export default function NewEntryPage() {
 
   const loadAccounts = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
       // Obtener empresa activa
-      const companiesRes = await fetch('/api/companies', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const companiesRes = await fetch('/api/companies');
 
       if (!companiesRes.ok) return;
 
@@ -53,11 +48,7 @@ export default function NewEntryPage() {
 
       if (!activeCompany) return;
 
-      const response = await fetch(`/api/accounting/accounts?companyId=${activeCompany.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch(`/api/accounting/accounts?companyId=${activeCompany.id}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -115,12 +106,8 @@ export default function NewEntryPage() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      
       // Obtener empresa activa
-      const companiesRes = await fetch('/api/companies', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const companiesRes = await fetch('/api/companies');
 
       if (!companiesRes.ok) {
         alert('Error al cargar la empresa');

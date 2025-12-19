@@ -89,20 +89,14 @@ export default function ChatPage() {
 
   const loadWorkspaces = async () => {
     try {
-      const token = localStorage.getItem('token');
-      
       // Obtener información del usuario actual
-      const userRes = await fetch('/api/auth/me', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const userRes = await fetch('/api/auth/me');
       if (userRes.ok) {
         const userData = await userRes.json();
         setCurrentUserId(userData.id);
       }
       
-      const res = await fetch('/api/chat/workspaces', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch('/api/chat/workspaces');
       
       if (res.ok) {
         const data = await res.json();
@@ -110,15 +104,12 @@ export default function ChatPage() {
         // Si no hay workspaces, inicializar uno por defecto
         if (data.length === 0) {
           const initRes = await fetch('/api/chat/init', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
+            method: 'POST'
           });
           
           if (initRes.ok) {
             // Recargar workspaces
-            const reloadRes = await fetch('/api/chat/workspaces', {
-              headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const reloadRes = await fetch('/api/chat/workspaces');
             if (reloadRes.ok) {
               const newData = await reloadRes.json();
               setWorkspaces(newData);
@@ -145,10 +136,7 @@ export default function ChatPage() {
 
   const loadChannels = async (workspaceId: string) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/chat/workspaces/${workspaceId}/channels`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch(`/api/chat/workspaces/${workspaceId}/channels`);
       
       if (res.ok) {
         const data = await res.json();
@@ -164,10 +152,7 @@ export default function ChatPage() {
 
   const loadDirectMessages = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/chat/direct-messages', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch('/api/chat/direct-messages');
       
       if (res.ok) {
         const data = await res.json();
@@ -182,10 +167,7 @@ export default function ChatPage() {
     if (!activeDM) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/chat/direct-messages/${activeDM.id}/messages`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch(`/api/chat/direct-messages/${activeDM.id}/messages`);
       
       if (res.ok) {
         const data = await res.json();
@@ -200,10 +182,7 @@ export default function ChatPage() {
     if (!activeChannel) return;
     
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/chat/channels/${activeChannel.id}/messages`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch(`/api/chat/channels/${activeChannel.id}/messages`);
       
       if (res.ok) {
         const data = await res.json();
@@ -219,11 +198,9 @@ export default function ChatPage() {
     if (!newMessage.trim() || !activeChannel) return;
 
     try {
-      const token = localStorage.getItem('token');
       const res = await fetch(`/api/chat/channels/${activeChannel.id}/messages`, {
         method: 'POST',
         headers: { 
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ content: newMessage })
@@ -239,32 +216,36 @@ export default function ChatPage() {
   };
 
   const loadWorkspaceUsers = async () => {
-    if (!activeWorkspace) return;
+    if (!activeWorkspace) {
+      console.log('No hay workspace activo');
+      return;
+    }
     
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`/api/chat/workspaces/${activeWorkspace.id}/members`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      console.log('Cargando usuarios del workspace:', activeWorkspace.id);
+      const res = await fetch(`/api/chat/workspaces/${activeWorkspace.id}/members`);
       
       if (res.ok) {
         const data = await res.json();
+        console.log('Usuarios cargados:', data);
         setWorkspaceUsers(data);
         setShowUserSelect(true);
+      } else {
+        console.error('Error al cargar usuarios:', res.status, await res.text());
+        alert('Error al cargar la lista de usuarios');
       }
     } catch (error) {
       console.error('Error loading users:', error);
+      alert('Error al cargar usuarios: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
   const startDirectMessage = async (userId: string) => {
     try {
-      const token = localStorage.getItem('token');
       const res = await fetch('/api/chat/direct-messages', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           workspaceId: activeWorkspace.id,
@@ -291,11 +272,9 @@ export default function ChatPage() {
     if (!newChannelName.trim() || !activeWorkspace) return;
 
     try {
-      const token = localStorage.getItem('token');
       const res = await fetch(`/api/chat/workspaces/${activeWorkspace.id}/channels`, {
         method: 'POST',
         headers: { 
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({

@@ -61,6 +61,8 @@ model User {
   accounts  Account[]
   taxes     Tax[]
   journalEntries JournalEntry[]
+  budgetItems BudgetItem[]
+  accountingTransactions AccountingTransaction[]
   
   // Comunicación (Slack clone)
   createdWorkspaces Workspace[] @relation("WorkspaceCreator")
@@ -105,6 +107,12 @@ model Company {
   // Secuencias de cotizaciones
   quotePrefix            String    @default("COT")   // Prefijo para cotizaciones
   quoteNextNumber        Int       @default(1)       // Próximo número de cotización
+  
+  // Secuencias de pagos
+  paymentEntradaPrefix   String    @default("ENT")   // Prefijo para pagos de entrada
+  paymentEntradaNextNumber Int     @default(1)       // Próximo número de pago de entrada
+  paymentSalidaPrefix    String    @default("SAL")   // Prefijo para pagos de salida
+  paymentSalidaNextNumber Int      @default(1)       // Próximo número de pago de salida
   
   // Configuración SMTP para envío de correos
   smtpHost     String?  // smtp.gmail.com
@@ -154,6 +162,9 @@ model Company {
   taxes     Tax[]
   journalEntries JournalEntry[]
   workspaces Workspace[]
+  payments  Payment[]
+  budgetItems BudgetItem[]
+  accountingTransactions AccountingTransaction[]
   
   @@index([userId])
   @@index([userId, active])
@@ -193,6 +204,7 @@ model Contact {
   trackings   Tracking[]
   equipment   Equipment[]
   propertyContacts PropertyContact[]
+  payments    Payment[]
   
   @@index([userId])
   @@index([companyId])
@@ -360,6 +372,60 @@ model InvoiceAttachment {
   createdAt   DateTime @default(now())
   
   @@index([invoiceId])
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  number      String   // Secuencia ENT-0001 o SAL-0001
+  type        PaymentType // ENTRADA o SALIDA
+  estado      PaymentEstado @default(BORRADOR) // BORRADOR o VALIDADO
+  
+  journalId   String?
+  journal     Journal? @relation(fields: [journalId], references: [id], onDelete: SetNull)
+  
+  amount      Decimal  @db.Decimal(15, 2)
+  currency    String   @default("EUR")
+  
+  contactId   String?
+  contact     Contact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  date        DateTime @default(now())
+  description String?  @db.Text
+  
+  concepto    String?  // Concepto del pago
+  
+  budgetItemId String?
+  budgetItem  BudgetItem? @relation(fields: [budgetItemId], references: [id], onDelete: SetNull)
+  
+  propertyId  String?
+  property    Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([companyId])
+  @@index([journalId])
+  @@index([contactId])
+  @@index([projectId])
+  @@index([budgetItemId])
+  @@index([propertyId])
+  @@index([type])
+}
+
+enum PaymentType {
+  ENTRADA
+  SALIDA
+}
+
+enum PaymentEstado {
+  BORRADOR
+  VALIDADO
 }
 
 model Quote {
@@ -591,6 +657,7 @@ model Project {
   staff       ProjectStaff[] // Personal asignado al proyecto
   expenses    ProjectExpense[] // Gastos del proyecto
   properties  Property[] // Propiedades asociadas al proyecto
+  payments    Payment[]
   
   @@index([userId])
   @@index([companyId])
@@ -1028,6 +1095,7 @@ model Property {
   updatedAt             DateTime @updatedAt
   
   contacts              PropertyContact[]
+  payments              Payment[]
   
   @@unique([companyId, code])
   @@index([userId])
@@ -1069,6 +1137,8 @@ model Journal {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
+  payments    Payment[]
+  
   @@unique([companyId, code])
   @@index([userId])
   @@index([companyId])
@@ -1098,6 +1168,51 @@ model Account {
   @@index([userId])
   @@index([companyId])
   @@index([type])
+}
+
+model BudgetItem {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  code        String   // Código de la partida presupuestaria (ej: PP001, PP002)
+  name        String   // Nombre de la partida (ej: Gastos de Personal, Material de Oficina)
+  
+  active      Boolean  @default(true)
+  
+  payments    Payment[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([companyId, code])
+  @@index([userId])
+  @@index([companyId])
+}
+
+model AccountingTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  code        String   // Código de la transacción (ej: TRX001, TRX002)
+  name        String   // Nombre de la transacción
+  url         String   // URL de la transacción
+  
+  active      Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([companyId, code])
+  @@index([userId])
+  @@index([companyId])
 }
 
 model Tax {
