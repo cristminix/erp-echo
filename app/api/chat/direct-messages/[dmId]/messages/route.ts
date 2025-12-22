@@ -53,11 +53,6 @@ export async function GET(
             },
           },
         },
-        _count: {
-          select: {
-            children: true,
-          },
-        },
       },
       orderBy: {
         createdAt: 'asc',
@@ -82,7 +77,7 @@ export async function GET(
         }
         return acc;
       }, []),
-      replyCount: msg._count.children,
+      replyCount: 0, // children count removed
     }));
 
     return NextResponse.json(messagesWithReactions);

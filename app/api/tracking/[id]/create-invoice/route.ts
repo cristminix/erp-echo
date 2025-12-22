@@ -95,7 +95,7 @@ export async function POST(
         companyId: tracking.companyId,
         contactId: tracking.contactId,
         number: invoiceNumber,
-        type: 'SALE',
+        type: 'invoice_out',
         date: new Date(),
         dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
         subtotal,

@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     // Construir filtros
     const where: any = {
       companyId: company.id,
-      type: 'SALE' // Solo facturas de venta
+      type: 'invoice_out' // Solo facturas de venta
     };
 
     if (status) {

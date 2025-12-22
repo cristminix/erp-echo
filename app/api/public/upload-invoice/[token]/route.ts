@@ -100,7 +100,7 @@ export async function POST(
         companyId: company.id,
         contactId: contact.id,
         number: invoiceNumber,
-        type: 'PURCHASE',
+        type: 'invoice_in',
         date: new Date(),
         dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 días
         currency: company.currency,

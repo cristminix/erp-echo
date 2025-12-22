@@ -75,9 +75,9 @@ export async function GET(request: NextRequest) {
     invoices.forEach(invoice => {
       const month = new Date(invoice.date).getMonth();
       const monthName = months[month];
-      if (invoice.type === 'SALE') {
+      if (invoice.type === 'invoice_out') {
         salesData[monthName] += invoice.total;
-      } else if (invoice.type === 'PURCHASE') {
+      } else if (invoice.type === 'invoice_in') {
         purchasesData[monthName] += invoice.total;
       }
     });

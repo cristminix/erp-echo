@@ -9,7 +9,7 @@ const taxSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   rate: z.number().min(0, "La tasa debe ser mayor o igual a 0").max(100, "La tasa no puede exceder 100"),
   type: z.enum(["vat", "retention", "other"], {
-    errorMap: () => ({ message: "Tipo de impuesto inválido" })
+    message: "Tipo de impuesto inválido"
   }),
 });
 

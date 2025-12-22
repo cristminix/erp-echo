@@ -128,7 +128,6 @@ export default function NewEntryPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           companyId: activeCompany.id,

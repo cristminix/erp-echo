@@ -45,7 +45,7 @@ export async function POST(
         userId: payload.userId,
         companyId: quote.companyId,
         contactId: quote.contactId,
-        type: 'SALE',
+        type: 'invoice_out',
         number: invoiceNumber,
         date: new Date(),
         currency: quote.currency,
