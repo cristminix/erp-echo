@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import toast, { Toaster } from 'react-hot-toast';
 
 interface Contact {
   id: string;
@@ -307,11 +308,6 @@ export default function EditPurchaseInvoicePage() {
       return;
     }
 
-    if (formData.status === 'VALIDATED') {
-      setError('No puedes editar una factura validada');
-      return;
-    }
-
     setSaving(true);
     setError('');
 
@@ -356,8 +352,11 @@ export default function EditPurchaseInvoicePage() {
         throw new Error(errorData.error || 'Error al actualizar la factura');
       }
 
-      alert('Factura actualizada exitosamente');
-      router.push('/dashboard/purchase-invoices');
+      const updatedInvoice = await res.json();
+      setInvoice(updatedInvoice);
+      toast.success('✅ Factura actualizada exitosamente');
+      // Recargar la factura para mostrar datos actualizados
+      await fetchInvoice();
     } catch (error: any) {
       console.error('Error:', error);
       setError(error.message || 'Error al actualizar la factura');
@@ -371,7 +370,7 @@ export default function EditPurchaseInvoicePage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('¿Estás seguro de eliminar esta factura?')) return;
+    if (!window.confirm('¿Estás seguro de eliminar esta factura?')) return;
 
     try {
       const res = await fetch(`/api/invoices/${invoiceId}`, {
@@ -382,11 +381,11 @@ export default function EditPurchaseInvoicePage() {
         throw new Error('Error al eliminar la factura');
       }
 
-      alert('Factura eliminada exitosamente');
+      toast.success('🗑️ Factura eliminada exitosamente');
       router.push('/dashboard/purchase-invoices');
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al eliminar la factura');
+      toast.error('❌ Error al eliminar la factura');
     }
   };
 
@@ -433,11 +432,11 @@ export default function EditPurchaseInvoicePage() {
       }
 
       const data = await res.json();
-      alert('Factura duplicada exitosamente');
+      toast.success('📋 Factura duplicada exitosamente');
       router.push(`/dashboard/purchase-invoices/${data.id}`);
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al duplicar la factura');
+      toast.error('❌ Error al duplicar la factura');
     }
   };
 
@@ -456,6 +455,7 @@ export default function EditPurchaseInvoicePage() {
 
   return (
     <div className="p-6">
+      <Toaster position="top-right" />
       <style jsx global>{`
         @media print {
           body * {
@@ -532,7 +532,7 @@ export default function EditPurchaseInvoicePage() {
           <div className="lg:col-span-2 space-y-6">
             <Card className="print-content">
               <div className="p-6">
-                <h2 className="text-lg font-semibold mb-4">Información General</h2>
+                <h2 className="text-lg font-semibold mb-4 text-black">Información General</h2>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -552,7 +552,7 @@ export default function EditPurchaseInvoicePage() {
                       Proveedor *
                     </label>
                     <select
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                       value={formData.contactId}
                       onChange={(e) => setFormData({ ...formData, contactId: e.target.value })}
                       disabled={isValidated}
@@ -609,7 +609,7 @@ export default function EditPurchaseInvoicePage() {
                       Moneda *
                     </label>
                     <select
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                       value={formData.currency}
                       onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                       disabled={isValidated}
@@ -627,7 +627,7 @@ export default function EditPurchaseInvoicePage() {
                     Notas
                   </label>
                   <textarea
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                     rows={3}
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -641,7 +641,7 @@ export default function EditPurchaseInvoicePage() {
             <Card className="print-content">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-semibold">Productos / Servicios</h2>
+                  <h2 className="text-lg font-semibold text-black">Productos / Servicios</h2>
                   {!isValidated && (
                     <Button type="button" variant="secondary" onClick={addItem} className="no-print">
                       + Agregar Línea
@@ -668,7 +668,7 @@ export default function EditPurchaseInvoicePage() {
                         <tr key={index} className="border-b">
                           <td className="py-2 px-2">
                             <select
-                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
+                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded text-black"
                               value={item.productId}
                               onChange={(e) => handleItemChange(index, 'productId', e.target.value)}
                               disabled={isValidated}
@@ -683,7 +683,7 @@ export default function EditPurchaseInvoicePage() {
                           </td>
                           <td className="py-2 px-2">
                             <select
-                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
+                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded text-black"
                               value={item.projectId || ''}
                               onChange={(e) => handleItemChange(index, 'projectId', e.target.value)}
                               disabled={isValidated}
@@ -734,7 +734,7 @@ export default function EditPurchaseInvoicePage() {
                               className="text-sm text-right"
                             />
                           </td>
-                          <td className="py-2 px-2 text-right text-sm font-medium">
+                          <td className="py-2 px-2 text-right text-sm font-medium text-black">
                             {item.total.toFixed(2)} {formData.currency}
                           </td>
                           {!isValidated && (
@@ -762,7 +762,7 @@ export default function EditPurchaseInvoicePage() {
           <div className="space-y-6">
             <Card>
               <div className="p-6 no-print">
-                <h2 className="text-lg font-semibold mb-4">Estado</h2>
+                <h2 className="text-lg font-semibold mb-4 text-black">Estado</h2>
                 
                 <div className="space-y-4">
                   <div>
@@ -770,7 +770,7 @@ export default function EditPurchaseInvoicePage() {
                       Estado de la Factura
                     </label>
                     <select
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value as 'DRAFT' | 'VALIDATED' })}
                       disabled={isValidated}
@@ -785,7 +785,7 @@ export default function EditPurchaseInvoicePage() {
                       Estado de Pago
                     </label>
                     <select
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                       value={formData.paymentStatus}
                       onChange={(e) => setFormData({ ...formData, paymentStatus: e.target.value as 'UNPAID' | 'PAID' })}
                     >
@@ -799,27 +799,27 @@ export default function EditPurchaseInvoicePage() {
 
             <Card className="print-content">
               <div className="p-6">
-                <h2 className="text-lg font-semibold mb-4">Resumen</h2>
+                <h2 className="text-lg font-semibold mb-4 text-black">Resumen</h2>
                 
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Subtotal:</span>
-                    <span className="font-medium">{totals.subtotal.toFixed(2)} {formData.currency}</span>
+                    <span className="font-medium text-black">{totals.subtotal.toFixed(2)} {formData.currency}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">IVA:</span>
-                    <span className="font-medium">{totals.taxAmount.toFixed(2)} {formData.currency}</span>
+                    <span className="font-medium text-black">{totals.taxAmount.toFixed(2)} {formData.currency}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t pt-3">
-                    <span>Total:</span>
-                    <span>{totals.total.toFixed(2)} {formData.currency}</span>
+                    <span className="text-black">Total:</span>
+                    <span className="text-black">{totals.total.toFixed(2)} {formData.currency}</span>
                   </div>
                 </div>
 
                 <Button
                   type="submit"
                   className="w-full mt-6 no-print"
-                  disabled={saving || isValidated}
+                  disabled={saving}
                 >
                   {saving ? 'Guardando...' : 'Guardar Cambios'}
                 </Button>

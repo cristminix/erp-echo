@@ -58,6 +58,17 @@ interface ProjectExpense {
   updatedAt: string;
 }
 
+interface Property {
+  id: string;
+  code: string;
+  name: string;
+  responsableId: string | null;
+  responsable?: {
+    id: string;
+    name: string;
+  } | null;
+}
+
 interface Project {
   id: string;
   name: string;
@@ -91,6 +102,7 @@ export default function ProjectDetailPage() {
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
   const [expenses, setExpenses] = useState<ProjectExpense[]>([]);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',
@@ -145,12 +157,20 @@ export default function ProjectDetailPage() {
     salePrice: '',
     color: '#10b981',
   });
+  const [showDistributeCosts, setShowDistributeCosts] = useState(false);
+  const [distributeCosts, setDistributeCosts] = useState({
+    startDate: '',
+    endDate: '',
+  });
+  const [isDistributing, setIsDistributing] = useState(false);
+  const [distributionResult, setDistributionResult] = useState<any>(null);
 
   useEffect(() => {
     if (projectId) {
       fetchProject();
       fetchUsers();
       fetchExpenses();
+      fetchProperties();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
@@ -201,6 +221,22 @@ export default function ProjectDetailPage() {
       }
     } catch (error) {
       console.error('Error al cargar productos:', error);
+    }
+  };
+
+  const fetchProperties = async () => {
+    try {
+      // Usar projectId directamente para filtrar
+      const res = await fetch(`/api/properties?projectId=${projectId}`);
+      if (res.ok) {
+        const data = await res.json();
+        console.log('Propiedades cargadas:', data);
+        setProperties(data);
+      } else {
+        console.error('Error en respuesta:', await res.text());
+      }
+    } catch (error) {
+      console.error('Error al cargar propiedades:', error);
     }
   };
 
@@ -395,6 +431,60 @@ export default function ProjectDetailPage() {
       date: '',
       notes: '',
     });
+  };
+
+  // Función para distribuir costes
+  const handleDistributeCosts = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!distributeCosts.startDate || !distributeCosts.endDate) {
+      alert('Por favor selecciona las fechas de inicio y fin');
+      return;
+    }
+
+    if (new Date(distributeCosts.startDate) > new Date(distributeCosts.endDate)) {
+      alert('La fecha de inicio debe ser anterior a la fecha de fin');
+      return;
+    }
+
+    if (!confirm(
+      '¿Deseas distribuir los costes de las facturas validadas en el rango de fechas seleccionado entre todas las propiedades con responsable asociadas a este proyecto?'
+    )) {
+      return;
+    }
+
+    setIsDistributing(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/distribute-costs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          startDate: distributeCosts.startDate,
+          endDate: distributeCosts.endDate,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setDistributionResult(data);
+        alert(
+          `✅ Distribución completada:\n\n` +
+          `Total facturado: ${data.totalAmount.toFixed(2)} €\n` +
+          `Propiedades: ${data.propertiesCount}\n` +
+          `Importe por propiedad: ${data.amountPerProperty.toFixed(2)} €\n` +
+          `Pagos creados: ${data.payments.length}`
+        );
+        setShowDistributeCosts(false);
+        setDistributeCosts({ startDate: '', endDate: '' });
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error al distribuir costes:', error);
+      alert('Error al distribuir costes');
+    } finally {
+      setIsDistributing(false);
+    }
   };
 
   // Calcular coste total de personal
@@ -653,6 +743,13 @@ export default function ProjectDetailPage() {
         </div>
         <div className="flex gap-2">
           <Button
+            onClick={() => setShowDistributeCosts(true)}
+            variant="secondary"
+            className="flex items-center gap-2"
+          >
+            💰 Distribuir Costes
+          </Button>
+          <Button
             onClick={handleStartEditProject}
             variant="secondary"
             className="flex items-center gap-2"
@@ -674,6 +771,61 @@ export default function ProjectDetailPage() {
           </Button>
         </div>
       </div>
+
+      {/* Distribute Costs Modal */}
+      {showDistributeCosts && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">💰 Distribuir Costes</h2>
+            <p className="text-gray-600 mb-6">
+              Distribuye los costes de las facturas validadas entre las propiedades con responsable asociadas a este proyecto.
+            </p>
+            <form onSubmit={handleDistributeCosts} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio *</label>
+                <input
+                  type="date"
+                  value={distributeCosts.startDate}
+                  onChange={(e) => setDistributeCosts({ ...distributeCosts, startDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de fin *</label>
+                <input
+                  type="date"
+                  value={distributeCosts.endDate}
+                  onChange={(e) => setDistributeCosts({ ...distributeCosts, endDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
+                  required
+                />
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  ℹ️ Se buscarán todas las facturas validadas con este proyecto en el rango de fechas y se dividirá el total entre las propiedades con responsable.
+                </p>
+              </div>
+              <div className="flex gap-3 justify-end pt-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    setShowDistributeCosts(false);
+                    setDistributeCosts({ startDate: '', endDate: '' });
+                  }}
+                  disabled={isDistributing}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isDistributing}>
+                  {isDistributing ? 'Distribuyendo...' : 'Distribuir'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Edit Project Modal */}
       {showEditProject && (
@@ -774,6 +926,36 @@ export default function ProjectDetailPage() {
           </div>
         </div>
       )}
+
+      {/* KPIs Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Link href={`/dashboard/properties?projectId=${projectId}`} className="block transition-transform hover:scale-105">
+          <Card>
+            <div className="space-y-2 cursor-pointer">
+              <div className="flex items-center gap-2 text-gray-600">
+                <span className="text-2xl">🏢</span>
+                <span className="text-sm font-medium">Total de Propiedades</span>
+              </div>
+              <div className="text-3xl font-bold" style={{ color: project.color }}>
+                {properties.length}
+              </div>
+            </div>
+          </Card>
+        </Link>
+        <Link href="/dashboard/contacts" className="block transition-transform hover:scale-105">
+          <Card>
+            <div className="space-y-2 cursor-pointer">
+              <div className="flex items-center gap-2 text-gray-600">
+                <span className="text-2xl">👥</span>
+                <span className="text-sm font-medium">Total de Propietarios</span>
+              </div>
+              <div className="text-3xl font-bold" style={{ color: project.color }}>
+                {new Set(properties.filter(p => p.responsableId).map(p => p.responsableId)).size}
+              </div>
+            </div>
+          </Card>
+        </Link>
+      </div>
 
       {/* Progress Card */}
       <Card>

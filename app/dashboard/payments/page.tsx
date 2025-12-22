@@ -9,6 +9,7 @@ interface Payment {
   id: string;
   number: string;
   type: 'ENTRADA' | 'SALIDA';
+  estado: 'BORRADOR' | 'VALIDADO';
   amount: number;
   currency: string;
   date: string;
@@ -20,6 +21,10 @@ interface Payment {
   project?: {
     id: string;
     name: string;
+  };
+  property?: {
+    id: string;
+    code: string;
   };
   journal?: {
     id: string;
@@ -184,6 +189,9 @@ export default function PaymentsPage() {
                   Tipo
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Estado
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Fecha
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -222,6 +230,17 @@ export default function PaymentsPage() {
                       }`}
                     >
                       {payment.type === 'ENTRADA' ? 'Entrada' : 'Salida'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        payment.estado === 'VALIDADO'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}
+                    >
+                      {payment.estado === 'VALIDADO' ? 'Validado' : 'Borrador'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

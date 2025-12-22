@@ -28,10 +28,11 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
+    const projectId = searchParams.get('projectId');
 
-    if (!companyId) {
+    if (!companyId && !projectId) {
       return NextResponse.json(
-        { error: 'Company ID es requerido' },
+        { error: 'Company ID o Project ID es requerido' },
         { status: 400 }
       );
     }
@@ -43,12 +44,21 @@ export async function GET(request: NextRequest) {
 
     const effectiveUserId = await getEffectiveUserId(payload.userId);
 
+    const whereClause: any = {
+      userId: effectiveUserId,
+      active: true,
+    };
+
+    if (companyId) {
+      whereClause.companyId = companyId;
+    }
+
+    if (projectId) {
+      whereClause.projectId = projectId;
+    }
+
     const properties = await prisma.property.findMany({
-      where: {
-        userId: effectiveUserId,
-        companyId,
-        active: true,
-      },
+      where: whereClause,
       include: {
         project: {
           select: {
