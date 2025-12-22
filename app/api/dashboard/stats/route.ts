@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     const salesInvoicesCount = await prisma.invoice.count({
       where: {
         companyId: activeCompany.id,
-        type: 'SALE',
+        type: 'invoice_out',
       },
     });
 
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     const purchaseInvoicesCount = await prisma.invoice.count({
       where: {
         companyId: activeCompany.id,
-        type: 'PURCHASE',
+        type: 'invoice_in',
       },
     });
 
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
     const salesInvoices = await prisma.invoice.findMany({
       where: {
         companyId: activeCompany.id,
-        type: 'SALE',
+        type: 'invoice_out',
       },
       select: {
         total: true,
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
     const purchaseInvoices = await prisma.invoice.findMany({
       where: {
         companyId: activeCompany.id,
-        type: 'PURCHASE',
+        type: 'invoice_in',
       },
       select: {
         total: true,

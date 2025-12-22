@@ -102,7 +102,7 @@ export async function PUT(
     const validationResult = updateInvoiceSchema.safeParse(body);
     if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Datos inválidos', details: validationResult.error.errors },
+        { error: 'Datos inválidos', details: validationResult.error.issues },
         { status: 400 }
       );
     }

@@ -9,7 +9,7 @@ const accountSchema = z.object({
   code: z.string().min(1, "El código es requerido"),
   name: z.string().min(1, "El nombre es requerido"),
   type: z.enum(["asset", "liability", "equity", "income", "expense"], {
-    errorMap: () => ({ message: "Tipo de cuenta inválido" })
+    message: "Tipo de cuenta inválido"
   }),
 });
 
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: error.errors[0].message },
+        { error: error.issues[0].message },
         { status: 400 }
       );
     }

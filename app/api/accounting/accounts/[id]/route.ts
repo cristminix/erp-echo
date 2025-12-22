@@ -73,7 +73,7 @@ export async function DELETE(
     const accountId = params.id;
 
     // Verificar si la partida tiene movimientos
-    const entryLines = await prisma.entryLine.count({
+    const entryLines = await prisma.journalEntryLine.count({
       where: { accountId },
     });
 
