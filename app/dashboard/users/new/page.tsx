@@ -1,86 +1,90 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/Button"
+import { Input } from "@/components/ui/Input"
+import { Card } from "@/components/ui/Card"
 
 interface Company {
-  id: string;
-  name: string;
+  id: string
+  name: string
 }
 
 export default function NewUserPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [error, setError] = useState('');
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [error, setError] = useState("")
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'user',
-    defaultCompanyId: '',
-  });
+    name: "",
+    email: "",
+    password: "",
+    role: "user",
+    defaultCompanyId: "",
+  })
 
   useEffect(() => {
-    fetchCompanies();
-  }, []);
+    fetchCompanies()
+  }, [])
 
   const fetchCompanies = async () => {
     try {
-      const res = await fetch('/api/companies');
+      const res = await fetch("/api/companies")
       if (res.ok) {
-        const data = await res.json();
-        setCompanies(data);
+        const data = await res.json()
+        setCompanies(data)
       }
     } catch (error) {
-      console.error('Error fetching companies:', error);
+      console.error("Error fetching companies:", error)
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+    e.preventDefault()
+    setLoading(true)
+    setError("")
 
     try {
-      const res = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           defaultCompanyId: formData.defaultCompanyId || undefined,
         }),
-      });
+      })
 
       if (res.ok) {
-        router.push('/dashboard/users');
+        router.push("/dashboard/users")
       } else {
-        const data = await res.json();
-        setError(data.error || 'Error al crear usuario');
+        const data = await res.json()
+        setError(data.error || "Error al crear usuario")
       }
     } catch (error) {
-      console.error('Error creating user:', error);
-      setError('Error al crear usuario');
+      console.error("Error creating user:", error)
+      setError("Error al crear usuario")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    });
-  };
+    })
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">Nuevo Usuario</h2>
-        <p className="text-gray-600 mt-1">Crea un nuevo usuario para tu organización</p>
+        <h2 className="text-3xl font-bold text-gray-800">Nuevo Pengguna</h2>
+        <p className="text-gray-600 mt-1">
+          Crea un nuevo usuario para tu organización
+        </p>
       </div>
 
       <Card>
@@ -123,7 +127,10 @@ export default function NewUserPage() {
             />
 
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
                 Rol
               </label>
               <select
@@ -133,7 +140,7 @@ export default function NewUserPage() {
                 onChange={handleChange}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900"
               >
-                <option value="user">Usuario</option>
+                <option value="user">Pengguna</option>
                 <option value="admin">Administrador</option>
               </select>
               <p className="mt-1 text-sm text-gray-500">
@@ -142,8 +149,11 @@ export default function NewUserPage() {
             </div>
 
             <div>
-              <label htmlFor="defaultCompanyId" className="block text-sm font-medium text-gray-700 mb-1.5">
-                Empresa Asignada
+              <label
+                htmlFor="defaultCompanyId"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
+                Perusahaan Asignada
               </label>
               <select
                 id="defaultCompanyId"
@@ -175,11 +185,7 @@ export default function NewUserPage() {
             >
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="flex-1"
-            >
+            <Button type="submit" disabled={loading} className="flex-1">
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
@@ -187,10 +193,20 @@ export default function NewUserPage() {
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
-                  Crear Usuario
+                  Crear Pengguna
                 </>
               )}
             </Button>
@@ -198,5 +214,5 @@ export default function NewUserPage() {
         </form>
       </Card>
     </div>
-  );
+  )
 }

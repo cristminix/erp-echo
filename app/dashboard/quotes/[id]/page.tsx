@@ -1,215 +1,224 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
+import { useEffect, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { Button } from "@/components/ui/Button"
+import { Card } from "@/components/ui/Card"
 
 interface Quote {
-  id: string;
-  number: string;
-  date: string;
-  expiryDate: string | null;
-  currency: string;
-  subtotal: number;
-  taxAmount: number;
-  total: number;
-  status: 'QUOTE' | 'ORDER';
-  notes: string | null;
-  invoiceId: string | null;
-  workOrderId: string | null;
+  id: string
+  number: string
+  date: string
+  expiryDate: string | null
+  currency: string
+  subtotal: number
+  taxAmount: number
+  total: number
+  status: "QUOTE" | "ORDER"
+  notes: string | null
+  invoiceId: string | null
+  workOrderId: string | null
   contact: {
-    id: string;
-    name: string;
-    nif: string | null;
-    email: string | null;
-    phone: string | null;
-    address: string | null;
-  };
+    id: string
+    name: string
+    nif: string | null
+    email: string | null
+    phone: string | null
+    address: string | null
+  }
   company: {
-    id: string;
-    name: string;
-    nif: string | null;
-    address: string | null;
-    phone: string | null;
-    email: string | null;
-    logo: string | null;
-  };
+    id: string
+    name: string
+    nif: string | null
+    address: string | null
+    phone: string | null
+    email: string | null
+    logo: string | null
+  }
   items: Array<{
-    id: string;
-    description: string;
-    quantity: number;
-    price: number;
-    tax: number;
-    subtotal: number;
-    taxAmount: number;
-    total: number;
+    id: string
+    description: string
+    quantity: number
+    price: number
+    tax: number
+    subtotal: number
+    taxAmount: number
+    total: number
     product: {
-      id: string;
-      name: string;
-      code: string;
-      type: string;
-    } | null;
+      id: string
+      name: string
+      code: string
+      type: string
+    } | null
     project: {
-      id: string;
-      name: string;
-    } | null;
-  }>;
+      id: string
+      name: string
+    } | null
+  }>
   invoice: {
-    id: string;
-    number: string;
-  } | null;
+    id: string
+    number: string
+  } | null
 }
 
 export default function QuoteDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const [quote, setQuote] = useState<Quote | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [converting, setConverting] = useState(false);
-  const [creatingWorkOrder, setCreatingWorkOrder] = useState(false);
-  const [error, setError] = useState('');
+  const params = useParams()
+  const router = useRouter()
+  const [quote, setQuote] = useState<Quote | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [converting, setConverting] = useState(false)
+  const [creatingWorkOrder, setCreatingWorkOrder] = useState(false)
+  const [error, setError] = useState("")
 
   useEffect(() => {
-    fetchQuote();
-  }, []);
+    fetchQuote()
+  }, [])
 
   const fetchQuote = async () => {
     try {
-      const res = await fetch(`/api/quotes/${params.id}`);
+      const res = await fetch(`/api/quotes/${params.id}`)
       if (res.ok) {
-        const data = await res.json();
-        setQuote(data);
+        const data = await res.json()
+        setQuote(data)
       } else {
-        setError('Cotización no encontrada');
+        setError("Cotización no encontrada")
       }
     } catch (error) {
-      console.error('Error fetching quote:', error);
-      setError('Error al cargar cotización');
+      console.error("Error fetching quote:", error)
+      setError("Error al cargar cotización")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleConvertToInvoice = async () => {
-    if (!confirm('¿Deseas convertir esta cotización en factura?')) {
-      return;
+    if (!confirm("¿Deseas convertir esta cotización en factura?")) {
+      return
     }
 
-    setConverting(true);
+    setConverting(true)
     try {
       const res = await fetch(`/api/quotes/${params.id}/convert-to-invoice`, {
-        method: 'POST',
-      });
+        method: "POST",
+      })
 
       if (res.ok) {
-        const invoice = await res.json();
-        alert('Cotización convertida a factura exitosamente');
-        router.push(`/dashboard/invoices`);
+        const invoice = await res.json()
+        alert("Cotización convertida a factura exitosamente")
+        router.push(`/dashboard/invoices`)
       } else {
-        const error = await res.json();
-        alert(error.error || 'Error al convertir la cotización');
+        const error = await res.json()
+        alert(error.error || "Error al convertir la cotización")
       }
     } catch (error) {
-      console.error('Error converting quote:', error);
-      alert('Error al convertir la cotización');
+      console.error("Error converting quote:", error)
+      alert("Error al convertir la cotización")
     } finally {
-      setConverting(false);
+      setConverting(false)
     }
-  };
+  }
 
   const handleConvertToWorkOrder = async () => {
-    if (!quote) return;
-    
+    if (!quote) return
+
     // Contar servicios
-    const serviceCount = quote.items.filter(item => item.product?.type === 'service').length;
-    
+    const serviceCount = quote.items.filter(
+      (item) => item.product?.type === "service",
+    ).length
+
     if (serviceCount === 0) {
-      alert('No hay productos de tipo servicio en esta cotización');
-      return;
+      alert("No hay productos de tipo servicio en esta cotización")
+      return
     }
 
-    if (!confirm(`¿Crear orden de trabajo con ${serviceCount} servicio(s)?\n\nNota: Solo se incluirán productos de tipo servicio.`)) {
-      return;
+    if (
+      !confirm(
+        `¿Crear orden de trabajo con ${serviceCount} servicio(s)?\n\nNota: Solo se incluirán productos de tipo servicio.`,
+      )
+    ) {
+      return
     }
 
-    setCreatingWorkOrder(true);
+    setCreatingWorkOrder(true)
     try {
-      const res = await fetch(`/api/quotes/${params.id}/convert-to-work-order`, {
-        method: 'POST',
-      });
+      const res = await fetch(
+        `/api/quotes/${params.id}/convert-to-work-order`,
+        {
+          method: "POST",
+        },
+      )
 
       if (res.ok) {
-        const workOrder = await res.json();
-        alert(`✓ Orden de trabajo ${workOrder.number} creada exitosamente`);
-        fetchQuote(); // Recargar para mostrar el enlace
+        const workOrder = await res.json()
+        alert(`✓ Orden de trabajo ${workOrder.number} creada exitosamente`)
+        fetchQuote() // Recargar para mostrar el enlace
       } else {
-        const error = await res.json();
-        alert(error.error || 'Error al crear orden de trabajo');
+        const error = await res.json()
+        alert(error.error || "Error al crear orden de trabajo")
       }
     } catch (error) {
-      console.error('Error creating work order:', error);
-      alert('Error al crear orden de trabajo');
+      console.error("Error creating work order:", error)
+      alert("Error al crear orden de trabajo")
     } finally {
-      setCreatingWorkOrder(false);
+      setCreatingWorkOrder(false)
     }
-  };
+  }
 
-  const handleChangeStatus = async (newStatus: 'QUOTE' | 'ORDER') => {
+  const handleChangeStatus = async (newStatus: "QUOTE" | "ORDER") => {
     try {
       const res = await fetch(`/api/quotes/${params.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
-      });
+      })
 
       if (res.ok) {
-        fetchQuote();
-        alert('Estado actualizado');
+        fetchQuote()
+        alert("Estado actualizado")
       }
     } catch (error) {
-      console.error('Error updating status:', error);
-      alert('Error al actualizar estado');
+      console.error("Error updating status:", error)
+      alert("Error al actualizar estado")
     }
-  };
+  }
 
   const handleDelete = async () => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta cotización?')) {
-      return;
+    if (!confirm("¿Estás seguro de que deseas eliminar esta cotización?")) {
+      return
     }
 
     try {
       const res = await fetch(`/api/quotes/${params.id}`, {
-        method: 'DELETE',
-      });
+        method: "DELETE",
+      })
 
       if (res.ok) {
-        alert('Cotización eliminada');
-        router.push('/dashboard/quotes');
+        alert("Cotización eliminada")
+        router.push("/dashboard/quotes")
       } else {
-        alert('Error al eliminar la cotización');
+        alert("Error al eliminar la cotización")
       }
     } catch (error) {
-      console.error('Error deleting quote:', error);
-      alert('Error al eliminar la cotización');
+      console.error("Error deleting quote:", error)
+      alert("Error al eliminar la cotización")
     }
-  };
+  }
 
   const getCurrencySymbol = (currency: string) => {
     const symbols: { [key: string]: string } = {
-      EUR: '€',
-      USD: '$',
-      GBP: '£',
-      CHF: 'Fr',
-      JPY: '¥',
-      CNY: '¥',
-      MXN: '$',
-      ARS: '$',
-      COP: '$',
-      CLP: '$',
-    };
-    return symbols[currency] || currency;
-  };
+      EUR: "€",
+      USD: "$",
+      GBP: "£",
+      CHF: "Fr",
+      JPY: "¥",
+      CNY: "¥",
+      MXN: "$",
+      ARS: "$",
+      COP: "$",
+      CLP: "$",
+    }
+    return symbols[currency] || currency
+  }
 
   const getStatusBadge = (status: string, hasInvoice: boolean) => {
     if (hasInvoice) {
@@ -217,23 +226,23 @@ export default function QuoteDetailPage() {
         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
           Facturada
         </span>
-      );
+      )
     }
-    
-    if (status === 'ORDER') {
+
+    if (status === "ORDER") {
       return (
         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
           Pedido
         </span>
-      );
+      )
     }
-    
+
     return (
       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
         Cotización
       </span>
-    );
-  };
+    )
+  }
 
   if (loading) {
     return (
@@ -243,18 +252,18 @@ export default function QuoteDetailPage() {
           <p className="text-gray-600">Cargando cotización...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (error || !quote) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">{error || 'Cotización no encontrada'}</p>
+        <p className="text-red-800">{error || "Cotización no encontrada"}</p>
         <Button onClick={() => router.back()} className="mt-4">
           Volver
         </Button>
       </div>
-    );
+    )
   }
 
   return (
@@ -266,9 +275,7 @@ export default function QuoteDetailPage() {
             <h1 className="text-3xl font-bold text-gray-800">{quote.number}</h1>
             {getStatusBadge(quote.status, !!quote.invoiceId)}
           </div>
-          <p className="text-gray-600">
-            Cotización de {quote.company.name}
-          </p>
+          <p className="text-gray-600">Cotización de {quote.company.name}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => router.back()}>
@@ -276,19 +283,16 @@ export default function QuoteDetailPage() {
           </Button>
           {!quote.invoiceId && (
             <>
-              {quote.status === 'QUOTE' && (
+              {quote.status === "QUOTE" && (
                 <Button
-                  onClick={() => handleChangeStatus('ORDER')}
+                  onClick={() => handleChangeStatus("ORDER")}
                   variant="secondary"
                 >
                   Marcar como Pedido
                 </Button>
               )}
-              <Button
-                onClick={handleConvertToInvoice}
-                disabled={converting}
-              >
-                {converting ? 'Convirtiendo...' : '💰 Facturar'}
+              <Button onClick={handleConvertToInvoice} disabled={converting}>
+                {converting ? "Convirtiendo..." : "💰 Facturar"}
               </Button>
               {!quote.workOrderId && (
                 <Button
@@ -296,14 +300,16 @@ export default function QuoteDetailPage() {
                   disabled={creatingWorkOrder}
                   variant="secondary"
                 >
-                  {creatingWorkOrder ? 'Creando...' : '🔧 Crear OT'}
+                  {creatingWorkOrder ? "Creando..." : "🔧 Crear OT"}
                 </Button>
               )}
             </>
           )}
           {quote.workOrderId && (
             <Button
-              onClick={() => router.push(`/dashboard/work-orders/${quote.workOrderId}`)}
+              onClick={() =>
+                router.push(`/dashboard/work-orders/${quote.workOrderId}`)
+              }
               variant="secondary"
             >
               📋 Ver Orden de Trabajo
@@ -316,7 +322,9 @@ export default function QuoteDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Datos de la empresa */}
         <Card>
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Empresa</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            Perusahaan
+          </h2>
           <div className="space-y-2 text-sm">
             <div>
               <span className="font-medium text-gray-700">Nombre:</span>
@@ -392,14 +400,16 @@ export default function QuoteDetailPage() {
           <div>
             <span className="font-medium text-gray-700">Fecha:</span>
             <div className="text-gray-900">
-              {new Date(quote.date).toLocaleDateString('es-ES')}
+              {new Date(quote.date).toLocaleDateString("es-ES")}
             </div>
           </div>
           {quote.expiryDate && (
             <div>
-              <span className="font-medium text-gray-700">Fecha de Expiración:</span>
+              <span className="font-medium text-gray-700">
+                Fecha de Expiración:
+              </span>
               <div className="text-gray-900">
-                {new Date(quote.expiryDate).toLocaleDateString('es-ES')}
+                {new Date(quote.expiryDate).toLocaleDateString("es-ES")}
               </div>
             </div>
           )}
@@ -411,15 +421,19 @@ export default function QuoteDetailPage() {
         {quote.notes && (
           <div className="mt-4 pt-4 border-t border-gray-200">
             <span className="font-medium text-gray-700 block mb-2">Notas:</span>
-            <div className="text-gray-900 whitespace-pre-wrap">{quote.notes}</div>
+            <div className="text-gray-900 whitespace-pre-wrap">
+              {quote.notes}
+            </div>
           </div>
         )}
         {quote.invoice && (
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <span className="font-medium text-gray-700 block mb-2">Factura Generada:</span>
+            <span className="font-medium text-gray-700 block mb-2">
+              Factura Generada:
+            </span>
             <div className="text-blue-600 hover:text-blue-800">
-              <button 
-                onClick={() => router.push('/dashboard/invoices')}
+              <button
+                onClick={() => router.push("/dashboard/invoices")}
                 className="font-medium"
               >
                 {quote.invoice.number} →
@@ -431,7 +445,9 @@ export default function QuoteDetailPage() {
 
       {/* Items */}
       <Card>
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Artículos / Servicios</h2>
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">
+          Artículos / Servicios
+        </h2>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -476,7 +492,7 @@ export default function QuoteDetailPage() {
                           </div>
                         )}
                       </div>
-                      {item.product?.type === 'service' && (
+                      {item.product?.type === "service" && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
                           Servicio
                         </span>
@@ -493,7 +509,8 @@ export default function QuoteDetailPage() {
                     {item.tax}%
                   </td>
                   <td className="px-4 py-3 text-right text-sm text-gray-900">
-                    {item.subtotal.toFixed(2)} {getCurrencySymbol(quote.currency)}
+                    {item.subtotal.toFixed(2)}{" "}
+                    {getCurrencySymbol(quote.currency)}
                   </td>
                   <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
                     {item.total.toFixed(2)} {getCurrencySymbol(quote.currency)}
@@ -511,13 +528,15 @@ export default function QuoteDetailPage() {
               <div className="flex justify-between text-gray-700">
                 <span>Subtotal:</span>
                 <span className="font-medium">
-                  {quote.subtotal.toFixed(2)} {getCurrencySymbol(quote.currency)}
+                  {quote.subtotal.toFixed(2)}{" "}
+                  {getCurrencySymbol(quote.currency)}
                 </span>
               </div>
               <div className="flex justify-between text-gray-700">
                 <span>IVA:</span>
                 <span className="font-medium">
-                  {quote.taxAmount.toFixed(2)} {getCurrencySymbol(quote.currency)}
+                  {quote.taxAmount.toFixed(2)}{" "}
+                  {getCurrencySymbol(quote.currency)}
                 </span>
               </div>
               <div className="flex justify-between text-xl font-bold text-gray-900 pt-2 border-t border-gray-300">
@@ -536,21 +555,15 @@ export default function QuoteDetailPage() {
         <Card>
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Acciones</h2>
           <div className="flex gap-3">
-            <Button
-              onClick={handleConvertToInvoice}
-              disabled={converting}
-            >
-              {converting ? 'Convirtiendo...' : '💰 Convertir a Factura'}
+            <Button onClick={handleConvertToInvoice} disabled={converting}>
+              {converting ? "Convirtiendo..." : "💰 Convertir a Factura"}
             </Button>
-            <Button
-              variant="secondary"
-              onClick={handleDelete}
-            >
+            <Button variant="secondary" onClick={handleDelete}>
               🗑️ Eliminar Cotización
             </Button>
           </div>
         </Card>
       )}
     </div>
-  );
+  )
 }

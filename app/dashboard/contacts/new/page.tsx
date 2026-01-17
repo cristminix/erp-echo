@@ -1,61 +1,62 @@
-'use client';
+"use client"
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/Button"
+import { Input } from "@/components/ui/Input"
+import { Card } from "@/components/ui/Card"
 
 export default function NewContactPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
   const [formData, setFormData] = useState({
-    name: '',
-    nif: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    postalCode: '',
-    country: 'España',
+    name: "",
+    nif: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    postalCode: "",
+    country: "España",
     isCustomer: true,
     isSupplier: true,
-  });
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+    e.preventDefault()
+    setLoading(true)
+    setError("")
 
     try {
-      const res = await fetch('/api/contacts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/contacts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
-      });
+      })
 
       if (res.ok) {
-        router.push('/dashboard/contacts');
+        router.push("/dashboard/contacts")
       } else {
-        const data = await res.json();
-        setError(data.error || 'Error al crear contacto');
+        const data = await res.json()
+        setError(data.error || "Error al crear contacto")
       }
     } catch (error) {
-      console.error('Error creating contact:', error);
-      setError('Error al crear contacto');
+      console.error("Error creating contact:", error)
+      setError("Error al crear contacto")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    const value =
+      e.target.type === "checkbox" ? e.target.checked : e.target.value
     setFormData({
       ...formData,
       [e.target.name]: value,
-    });
-  };
+    })
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -79,7 +80,7 @@ export default function NewContactPage() {
               value={formData.name}
               onChange={handleChange}
               required
-              placeholder="Ej: Empresa S.L."
+              placeholder="Ej: Perusahaan S.L."
             />
 
             <div className="grid grid-cols-2 gap-4">
@@ -146,7 +147,9 @@ export default function NewContactPage() {
             />
 
             <div className="border-t border-gray-200 pt-4">
-              <p className="text-sm font-medium text-gray-700 mb-3">Tipo de contacto</p>
+              <p className="text-sm font-medium text-gray-700 mb-3">
+                Tipo de contacto
+              </p>
               <div className="space-y-2">
                 <div className="flex items-center">
                   <input
@@ -157,7 +160,10 @@ export default function NewContactPage() {
                     onChange={handleChange}
                     className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
                   />
-                  <label htmlFor="isCustomer" className="ml-2 block text-sm text-gray-900">
+                  <label
+                    htmlFor="isCustomer"
+                    className="ml-2 block text-sm text-gray-900"
+                  >
                     Cliente
                   </label>
                 </div>
@@ -170,13 +176,17 @@ export default function NewContactPage() {
                     onChange={handleChange}
                     className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
                   />
-                  <label htmlFor="isSupplier" className="ml-2 block text-sm text-gray-900">
+                  <label
+                    htmlFor="isSupplier"
+                    className="ml-2 block text-sm text-gray-900"
+                  >
                     Proveedor
                   </label>
                 </div>
               </div>
               <p className="mt-2 text-sm text-gray-500">
-                Puedes marcar ambas opciones si el contacto es cliente y proveedor
+                Puedes marcar ambas opciones si el contacto es cliente y
+                proveedor
               </p>
             </div>
           </div>
@@ -191,11 +201,7 @@ export default function NewContactPage() {
             >
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="flex-1"
-            >
+            <Button type="submit" disabled={loading} className="flex-1">
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
@@ -203,8 +209,18 @@ export default function NewContactPage() {
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                   Crear Contacto
                 </>
@@ -214,5 +230,5 @@ export default function NewContactPage() {
         </form>
       </Card>
     </div>
-  );
+  )
 }

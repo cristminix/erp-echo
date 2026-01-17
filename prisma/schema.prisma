@@ -32,14 +32,14 @@ model User {
   // Coste por hora para cálculo de asistencia
   hourlyRate Decimal? @db.Decimal(10, 2) // Coste por hora del empleado
   
-  // Usuario que lo creó (null si es el usuario principal registrado)
+  // Pengguna que lo creó (null si es el usuario principal registrado)
   createdById String?
   createdBy   User?    @relation("UserCreator", fields: [createdById], references: [id], onDelete: Cascade)
   
   // Usuarios que este usuario ha creado
   createdUsers User[] @relation("UserCreator")
   
-  // Empresa asignada por defecto
+  // Perusahaan asignada por defecto
   defaultCompanyId String?
   defaultCompany   Company? @relation("DefaultCompany", fields: [defaultCompanyId], references: [id], onDelete: SetNull)
   
@@ -136,7 +136,7 @@ model Company {
   // Configuración de Odoo JSON-RPC
   odooUrl      String?  // URL de Odoo (ej: https://demo.odoo.com)
   odooDb       String?  // Nombre de la base de datos de Odoo
-  odooUsername String?  // Usuario de Odoo
+  odooUsername String?  // Pengguna de Odoo
   odooPassword String?  // Contraseña o API Key de Odoo
   odooVersion  String?  @default("17")  // Versión de Odoo (1-19)
   odooPort     String?  @default("8069")  // Puerto de conexión a Odoo

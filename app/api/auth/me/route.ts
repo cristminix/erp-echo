@@ -1,16 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/jwt';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server"
+import { verifyAuth } from "@/lib/jwt"
+import { prisma } from "@/lib/prisma"
 
 export async function GET(request: NextRequest) {
   try {
-    const payload = await verifyAuth(request);
+    const payload = await verifyAuth(request)
 
     if (!payload) {
-      return NextResponse.json(
-        { error: 'No autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 })
     }
 
     // Obtener usuario actualizado
@@ -24,44 +21,41 @@ export async function GET(request: NextRequest) {
         avatar: true,
         createdAt: true,
       },
-    });
+    })
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Usuario no encontrado' },
-        { status: 404 }
-      );
+        { error: "Pengguna no encontrado" },
+        { status: 404 },
+      )
     }
 
-    return NextResponse.json(user, { status: 200 });
+    return NextResponse.json(user, { status: 200 })
   } catch (error) {
-    console.error('Error al obtener usuario:', error);
+    console.error("Error al obtener usuario:", error)
     return NextResponse.json(
-      { error: 'Error al obtener usuario' },
-      { status: 500 }
-    );
+      { error: "Error al obtener usuario" },
+      { status: 500 },
+    )
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const payload = await verifyAuth(request);
+    const payload = await verifyAuth(request)
 
     if (!payload) {
-      return NextResponse.json(
-        { error: 'No autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 })
     }
 
-    const body = await request.json();
-    const { name, email, avatar } = body;
+    const body = await request.json()
+    const { name, email, avatar } = body
 
     if (!name || !email) {
       return NextResponse.json(
-        { error: 'Nombre y email son requeridos' },
-        { status: 400 }
-      );
+        { error: "Nombre y email son requeridos" },
+        { status: 400 },
+      )
     }
 
     // Verificar si el email ya existe (solo si es diferente al actual)
@@ -69,16 +63,16 @@ export async function PUT(request: NextRequest) {
       where: {
         email: email,
         NOT: {
-          id: payload.userId
-        }
-      }
-    });
+          id: payload.userId,
+        },
+      },
+    })
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'El email ya está en uso' },
-        { status: 400 }
-      );
+        { error: "El email ya está en uso" },
+        { status: 400 },
+      )
     }
 
     // Actualizar usuario
@@ -97,48 +91,45 @@ export async function PUT(request: NextRequest) {
         avatar: true,
         createdAt: true,
       },
-    });
+    })
 
-    return NextResponse.json(updatedUser, { status: 200 });
+    return NextResponse.json(updatedUser, { status: 200 })
   } catch (error) {
-    console.error('Error al actualizar usuario:', error);
+    console.error("Error al actualizar usuario:", error)
     return NextResponse.json(
-      { error: 'Error al actualizar usuario' },
-      { status: 500 }
-    );
+      { error: "Error al actualizar usuario" },
+      { status: 500 },
+    )
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const payload = await verifyAuth(request);
+    const payload = await verifyAuth(request)
 
     if (!payload) {
-      return NextResponse.json(
-        { error: 'No autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 })
     }
 
     // Eliminar usuario (cascade eliminará todas las empresas, productos, facturas, etc.)
     await prisma.user.delete({
       where: { id: payload.userId },
-    });
+    })
 
     // Crear respuesta y borrar cookie
     const response = NextResponse.json(
-      { success: true, message: 'Cuenta eliminada correctamente' },
-      { status: 200 }
-    );
+      { success: true, message: "Cuenta eliminada correctamente" },
+      { status: 200 },
+    )
 
-    response.cookies.delete('token');
+    response.cookies.delete("token")
 
-    return response;
+    return response
   } catch (error) {
-    console.error('Error al eliminar usuario:', error);
+    console.error("Error al eliminar usuario:", error)
     return NextResponse.json(
-      { error: 'Error al eliminar cuenta' },
-      { status: 500 }
-    );
+      { error: "Error al eliminar cuenta" },
+      { status: 500 },
+    )
   }
 }

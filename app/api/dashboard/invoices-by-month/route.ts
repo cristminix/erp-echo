@@ -1,20 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/jwt';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server"
+import { verifyAuth } from "@/lib/jwt"
+import { prisma } from "@/lib/prisma"
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('[Invoices by Month] Iniciando petición');
-    const payload = await verifyAuth(request);
-    console.log('[Invoices by Month] Payload:', payload);
+    console.log("[Invoices by Month] Iniciando petición")
+    const payload = await verifyAuth(request)
+    console.log("[Invoices by Month] Payload:", payload)
     if (!payload) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
-    const userId = payload.userId;
+    const userId = payload.userId
 
-    const { searchParams } = new URL(request.url);
-    const year = searchParams.get('year') || new Date().getFullYear().toString();
-    console.log('[Invoices by Month] Año solicitado:', year);
+    const { searchParams } = new URL(request.url)
+    const year = searchParams.get("year") || new Date().getFullYear().toString()
+    console.log("[Invoices by Month] Año solicitado:", year)
 
     // Obtener la empresa activa del usuario (o la primera si ninguna está activa)
     let activeCompany = await prisma.company.findFirst({
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         userId,
         active: true,
       },
-    });
+    })
 
     // Si no hay empresa activa, tomar la primera empresa del usuario
     if (!activeCompany) {
@@ -31,18 +31,18 @@ export async function GET(request: NextRequest) {
           userId,
         },
         orderBy: {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
-      });
+      })
     }
 
     if (!activeCompany) {
-      return NextResponse.json([]);
+      return NextResponse.json([])
     }
 
     // Obtener facturas del año especificado
-    const startDate = new Date(`${year}-01-01`);
-    const endDate = new Date(`${year}-12-31T23:59:59`);
+    const startDate = new Date(`${year}-01-01`)
+    const endDate = new Date(`${year}-12-31T23:59:59`)
 
     const invoices = await prisma.invoice.findMany({
       where: {
@@ -58,45 +58,67 @@ export async function GET(request: NextRequest) {
         currency: true,
         type: true,
       },
-    });
+    })
 
     // Agrupar por mes y tipo
-    const salesData: { [key: string]: number } = {};
-    const purchasesData: { [key: string]: number } = {};
-    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    
+    const salesData: { [key: string]: number } = {}
+    const purchasesData: { [key: string]: number } = {}
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "Mei",
+      "Jun",
+      "Jul",
+      "Agt",
+      "Sep",
+      "Okt",
+      "Nov",
+      "Des",
+    ]
+
     // Inicializar todos los meses en 0
     months.forEach((month) => {
-      salesData[month] = 0;
-      purchasesData[month] = 0;
-    });
+      salesData[month] = 0
+      purchasesData[month] = 0
+    })
 
     // Sumar totales por mes y tipo
-    invoices.forEach(invoice => {
-      const month = new Date(invoice.date).getMonth();
-      const monthName = months[month];
-      if (invoice.type === 'invoice_out') {
-        salesData[monthName] += invoice.total;
-      } else if (invoice.type === 'invoice_in') {
-        purchasesData[monthName] += invoice.total;
+    invoices.forEach((invoice) => {
+      const month = new Date(invoice.date).getMonth()
+      const monthName = months[month]
+      if (invoice.type === "invoice_out") {
+        salesData[monthName] += invoice.total
+      } else if (invoice.type === "invoice_in") {
+        purchasesData[monthName] += invoice.total
       }
-    });
+    })
 
     // Convertir a array para el gráfico
-    const chartData = months.map(month => ({
+    const chartData = months.map((month) => ({
       month,
       ventas: salesData[month],
       compras: purchasesData[month],
-    }));
+    }))
 
-    return NextResponse.json(chartData);
+    return NextResponse.json(chartData)
   } catch (error) {
-    console.error('[Invoices by Month] Error completo:', error);
-    console.error('[Invoices by Month] Error mensaje:', error instanceof Error ? error.message : 'Unknown error');
-    console.error('[Invoices by Month] Error stack:', error instanceof Error ? error.stack : 'No stack');
+    console.error("[Invoices by Month] Error completo:", error)
+    console.error(
+      "[Invoices by Month] Error mensaje:",
+      error instanceof Error ? error.message : "Unknown error",
+    )
+    console.error(
+      "[Invoices by Month] Error stack:",
+      error instanceof Error ? error.stack : "No stack",
+    )
     return NextResponse.json(
-      { error: 'Error al obtener facturas por mes', details: error instanceof Error ? error.message : 'Unknown' },
-      { status: 500 }
-    );
+      {
+        error: "Error al obtener facturas por mes",
+        details: error instanceof Error ? error.message : "Unknown",
+      },
+      { status: 500 },
+    )
   }
 }

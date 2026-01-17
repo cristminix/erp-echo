@@ -1,27 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/jwt';
-import { prisma } from '@/lib/prisma';
-import { getEffectiveUserId } from '@/lib/user-helpers';
+import { NextRequest, NextResponse } from "next/server"
+import { verifyAuth } from "@/lib/jwt"
+import { prisma } from "@/lib/prisma"
+import { getEffectiveUserId } from "@/lib/user-helpers"
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
-    const payload = await verifyAuth(request);
+    const payload = await verifyAuth(request)
     if (!payload) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const effectiveUserId = await getEffectiveUserId(payload.userId);
-    const body = await request.json();
-    const { startDate, endDate } = body;
+    const effectiveUserId = await getEffectiveUserId(payload.userId)
+    const body = await request.json()
+    const { startDate, endDate } = body
 
     if (!startDate || !endDate) {
       return NextResponse.json(
-        { error: 'Fechas de inicio y fin son requeridas' },
-        { status: 400 }
-      );
+        { error: "Fechas de inicio y fin son requeridas" },
+        { status: 400 },
+      )
     }
 
     // Verificar que el proyecto existe y obtener datos
@@ -34,13 +34,13 @@ export async function POST(
       include: {
         company: true,
       },
-    });
+    })
 
     if (!project) {
       return NextResponse.json(
-        { error: 'Proyecto no encontrado' },
-        { status: 404 }
-      );
+        { error: "Proyecto no encontrado" },
+        { status: 404 },
+      )
     }
 
     // Obtener todas las propiedades asociadas al proyecto con responsable
@@ -55,13 +55,15 @@ export async function POST(
       include: {
         responsable: true,
       },
-    });
+    })
 
     if (properties.length === 0) {
       return NextResponse.json(
-        { error: 'No hay propiedades con responsable asociadas a este proyecto' },
-        { status: 400 }
-      );
+        {
+          error: "No hay propiedades con responsable asociadas a este proyecto",
+        },
+        { status: 400 },
+      )
     }
 
     // Buscar todas las líneas de factura con este proyecto en el rango de fechas
@@ -73,53 +75,55 @@ export async function POST(
             gte: new Date(startDate),
             lte: new Date(endDate),
           },
-          status: 'VALIDATED',
+          status: "VALIDATED",
         },
       },
       select: {
         total: true,
       },
-    });
+    })
 
     // Sumar todos los importes
-    const totalAmount = invoiceItems.reduce((sum, item) => sum + item.total, 0);
+    const totalAmount = invoiceItems.reduce((sum, item) => sum + item.total, 0)
 
     if (totalAmount === 0) {
       return NextResponse.json(
-        { error: 'No hay facturas validadas en el rango de fechas seleccionado' },
-        { status: 400 }
-      );
+        {
+          error: "No hay facturas validadas en el rango de fechas seleccionado",
+        },
+        { status: 400 },
+      )
     }
 
     // Dividir entre el número de propiedades
-    const amountPerProperty = totalAmount / properties.length;
+    const amountPerProperty = totalAmount / properties.length
 
     // Obtener el siguiente número de pago de salida
     const company = await prisma.company.findUnique({
       where: { id: project.companyId },
       select: { paymentSalidaPrefix: true, paymentSalidaNextNumber: true },
-    });
+    })
 
     if (!company) {
       return NextResponse.json(
-        { error: 'Empresa no encontrada' },
-        { status: 404 }
-      );
+        { error: "Perusahaan no encontrada" },
+        { status: 404 },
+      )
     }
 
     // Crear pagos en borrador para cada responsable
-    const payments = [];
-    let nextNumber = company.paymentSalidaNextNumber;
+    const payments = []
+    let nextNumber = company.paymentSalidaNextNumber
 
     for (const property of properties) {
-      const paymentNumber = `${company.paymentSalidaPrefix}-${String(nextNumber).padStart(4, '0')}`;
-      
+      const paymentNumber = `${company.paymentSalidaPrefix}-${String(nextNumber).padStart(4, "0")}`
+
       const payment = await prisma.payment.create({
         data: {
           companyId: project.companyId,
           number: paymentNumber,
-          type: 'SALIDA',
-          estado: 'BORRADOR',
+          type: "SALIDA",
+          estado: "BORRADOR",
           amount: amountPerProperty,
           currency: project.company.currency,
           contactId: property.responsableId!,
@@ -145,17 +149,17 @@ export async function POST(
             },
           },
         },
-      });
+      })
 
-      payments.push(payment);
-      nextNumber++;
+      payments.push(payment)
+      nextNumber++
     }
 
     // Actualizar el siguiente número de pago
     await prisma.company.update({
       where: { id: project.companyId },
       data: { paymentSalidaNextNumber: nextNumber },
-    });
+    })
 
     return NextResponse.json({
       success: true,
@@ -163,12 +167,12 @@ export async function POST(
       amountPerProperty,
       propertiesCount: properties.length,
       payments,
-    });
+    })
   } catch (error) {
-    console.error('Error al distribuir costes:', error);
+    console.error("Error al distribuir costes:", error)
     return NextResponse.json(
-      { error: 'Error al distribuir costes' },
-      { status: 500 }
-    );
+      { error: "Error al distribuir costes" },
+      { status: 500 },
+    )
   }
 }

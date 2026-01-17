@@ -1,102 +1,104 @@
-'use client';
+"use client"
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/Button"
+import { Input } from "@/components/ui/Input"
+import { Card } from "@/components/ui/Card"
 
 export default function NewCompanyPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [formData, setFormData] = useState({
-    name: '',
-    nif: '',
-    address: '',
-    city: '',
-    postalCode: '',
-    country: '',
-    currency: 'EUR',
-    phone: '',
-    email: '',
-    logo: '',
-    primaryColor: '#10b981',
-    secondaryColor: '#059669',
-    salesInvoicePrefix: 'INV',
+    name: "",
+    nif: "",
+    address: "",
+    city: "",
+    postalCode: "",
+    country: "",
+    currency: "IDR",
+    phone: "",
+    email: "",
+    logo: "",
+    primaryColor: "#10b981",
+    secondaryColor: "#059669",
+    salesInvoicePrefix: "INV",
     salesInvoiceNextNumber: 1,
-    purchaseInvoicePrefix: 'INVO',
+    purchaseInvoicePrefix: "INVO",
     purchaseInvoiceNextNumber: 1,
-  });
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+    e.preventDefault()
+    setLoading(true)
+    setError("")
 
     try {
-      const res = await fetch('/api/companies', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/companies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
-      });
+      })
 
       if (res.ok) {
-        router.push('/dashboard/companies');
+        router.push("/dashboard/companies")
       } else {
-        const data = await res.json();
-        setError(data.error || 'Error al crear empresa');
+        const data = await res.json()
+        setError(data.error || "Error al crear empresa")
       }
     } catch (error) {
-      console.error('Error creating company:', error);
-      setError('Error al crear empresa');
+      console.error("Error creating company:", error)
+      setError("Error al crear empresa")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    });
-  };
+    })
+  }
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (file) {
       // Validar que sea PNG
-      if (!file.type.includes('png')) {
-        setError('Solo se permiten archivos PNG');
-        return;
-      }
-      
-      // Validar tamaño (máximo 2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        setError('El archivo no debe superar 2MB');
-        return;
+      if (!file.type.includes("png")) {
+        setError("Solo se permiten archivos PNG")
+        return
       }
 
-      const reader = new FileReader();
+      // Validar tamaño (máximo 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        setError("El archivo no debe superar 2MB")
+        return
+      }
+
+      const reader = new FileReader()
       reader.onloadend = () => {
-        const base64String = reader.result as string;
+        const base64String = reader.result as string
         setFormData({
           ...formData,
           logo: base64String,
-        });
-        setLogoPreview(base64String);
-        setError('');
-      };
-      reader.readAsDataURL(file);
+        })
+        setLogoPreview(base64String)
+        setError("")
+      }
+      reader.readAsDataURL(file)
     }
-  };
+  }
 
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">Nueva Empresa</h2>
-        <p className="text-gray-600 mt-1">Crea una nueva empresa para gestionar empleados y nóminas</p>
+        <h2 className="text-3xl font-bold text-gray-800">Nueva Perusahaan</h2>
+        <p className="text-gray-600 mt-1">
+          Crea una nueva empresa para gestionar empleados y nóminas
+        </p>
       </div>
 
       <Card>
@@ -109,12 +111,12 @@ export default function NewCompanyPage() {
 
           <div className="space-y-4">
             <Input
-              label="Nombre de la Empresa"
+              label="Nombre de la Perusahaan"
               name="name"
               value={formData.name}
               onChange={handleChange}
               required
-              placeholder="Ej: Mi Empresa S.L."
+              placeholder="Ej: Mi Perusahaan S.L."
             />
 
             <Input
@@ -160,14 +162,19 @@ export default function NewCompanyPage() {
             />
 
             <div>
-              <label htmlFor="currency" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="currency"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Moneda
               </label>
               <select
                 id="currency"
                 name="currency"
                 value={formData.currency}
-                onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, currency: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-900"
               >
                 <option value="EUR">EUR (€) - Euro</option>
@@ -180,6 +187,7 @@ export default function NewCompanyPage() {
                 <option value="ARS">ARS ($) - Peso argentino</option>
                 <option value="COP">COP ($) - Peso colombiano</option>
                 <option value="CLP">CLP ($) - Peso chileno</option>
+                <option value="IDR">IDR (Rp) - Indonesia</option>
               </select>
             </div>
 
@@ -203,7 +211,7 @@ export default function NewCompanyPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Logo de la Empresa (PNG)
+                Logo de la Perusahaan (PNG)
               </label>
               <div className="space-y-3">
                 <input
@@ -213,11 +221,14 @@ export default function NewCompanyPage() {
                   className="block w-full text-sm text-gray-900 bg-white border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:border-emerald-500"
                 />
                 <p className="text-xs text-gray-500">
-                  Sube un archivo PNG (máximo 2MB). Se guardará en formato base64.
+                  Sube un archivo PNG (máximo 2MB). Se guardará en formato
+                  base64.
                 </p>
                 {logoPreview && (
                   <div className="mt-3">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Vista previa:</p>
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      Vista previa:
+                    </p>
                     <div className="inline-block p-2 bg-gray-100 rounded-lg">
                       <img
                         src={logoPreview}
@@ -232,7 +243,9 @@ export default function NewCompanyPage() {
           </div>
 
           <div className="pt-4 border-t border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Secuencias de Facturas</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Secuencias de Facturas
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="space-y-4">
                 <h4 className="font-medium text-gray-700">Facturas de Venta</h4>
@@ -250,12 +263,19 @@ export default function NewCompanyPage() {
                   type="number"
                   min="1"
                   value={formData.salesInvoiceNextNumber}
-                  onChange={(e) => setFormData({ ...formData, salesInvoiceNextNumber: parseInt(e.target.value) || 1 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      salesInvoiceNextNumber: parseInt(e.target.value) || 1,
+                    })
+                  }
                   helperText="Próximo número de factura de venta a generar"
                 />
               </div>
               <div className="space-y-4">
-                <h4 className="font-medium text-gray-700">Facturas de Compra</h4>
+                <h4 className="font-medium text-gray-700">
+                  Facturas de Compra
+                </h4>
                 <Input
                   label="Prefijo"
                   name="purchaseInvoicePrefix"
@@ -270,7 +290,12 @@ export default function NewCompanyPage() {
                   type="number"
                   min="1"
                   value={formData.purchaseInvoiceNextNumber}
-                  onChange={(e) => setFormData({ ...formData, purchaseInvoiceNextNumber: parseInt(e.target.value) || 1 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      purchaseInvoiceNextNumber: parseInt(e.target.value) || 1,
+                    })
+                  }
                   helperText="Próximo número de factura de compra a generar"
                 />
               </div>
@@ -278,7 +303,9 @@ export default function NewCompanyPage() {
           </div>
 
           <div className="pt-4 border-t border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Colores del Tema</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Colores del Tema
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -342,11 +369,7 @@ export default function NewCompanyPage() {
             >
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="flex-1"
-            >
+            <Button type="submit" disabled={loading} className="flex-1">
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
@@ -354,10 +377,20 @@ export default function NewCompanyPage() {
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
-                  Crear Empresa
+                  Crear Perusahaan
                 </>
               )}
             </Button>
@@ -365,5 +398,5 @@ export default function NewCompanyPage() {
         </form>
       </Card>
     </div>
-  );
+  )
 }

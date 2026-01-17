@@ -1,114 +1,116 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { DataTable } from '@/components/DataTable';
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { DataTable } from "@/components/DataTable"
 
 interface Company {
-  id: string;
-  name: string;
-  nif?: string;
-  address?: string;
-  city?: string;
-  postalCode?: string;
-  phone?: string;
-  email?: string;
-  active: boolean;
-  createdAt: string;
+  id: string
+  name: string
+  nif?: string
+  address?: string
+  city?: string
+  postalCode?: string
+  phone?: string
+  email?: string
+  active: boolean
+  createdAt: string
   _count?: {
-    employees: number;
-    payrolls: number;
-  };
+    employees: number
+    payrolls: number
+  }
 }
 
 export default function CompaniesPage() {
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
-    fetchCompanies();
-  }, []);
+    fetchCompanies()
+  }, [])
 
   const fetchCompanies = async () => {
     try {
-      const res = await fetch('/api/companies');
+      const res = await fetch("/api/companies")
       if (res.ok) {
-        const data = await res.json();
-        setCompanies(data);
+        const data = await res.json()
+        setCompanies(data)
       }
     } catch (error) {
-      console.error('Error fetching companies:', error);
+      console.error("Error fetching companies:", error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleActivate = async (companyId: string) => {
     try {
       const res = await fetch(`/api/companies/${companyId}/activate`, {
-        method: 'POST',
-      });
+        method: "POST",
+      })
 
       if (res.ok) {
-        fetchCompanies();
+        fetchCompanies()
       }
     } catch (error) {
-      console.error('Error activating company:', error);
+      console.error("Error activating company:", error)
     }
-  };
-
-
+  }
 
   const columns = [
-    { 
-      key: 'name', 
-      label: 'Nombre',
-      sortable: true,
-      searchable: true
-    },
-    { 
-      key: 'nif', 
-      label: 'NIF',
+    {
+      key: "name",
+      label: "Nombre",
       sortable: true,
       searchable: true,
-      render: (company: Company) => company.nif || '-'
     },
-    { 
-      key: 'email', 
-      label: 'Email',
+    {
+      key: "nif",
+      label: "NIF",
       sortable: true,
       searchable: true,
-      render: (company: Company) => company.email || '-'
+      render: (company: Company) => company.nif || "-",
     },
-    { 
-      key: 'phone', 
-      label: 'Teléfono',
-      searchable: true,
-      render: (company: Company) => company.phone || '-'
-    },
-    { 
-      key: 'city', 
-      label: 'Ciudad',
+    {
+      key: "email",
+      label: "Email",
       sortable: true,
       searchable: true,
-      render: (company: Company) => company.city || '-'
+      render: (company: Company) => company.email || "-",
     },
-    { 
-      key: 'active', 
-      label: 'Estado',
+    {
+      key: "phone",
+      label: "Teléfono",
+      searchable: true,
+      render: (company: Company) => company.phone || "-",
+    },
+    {
+      key: "city",
+      label: "Ciudad",
+      sortable: true,
+      searchable: true,
+      render: (company: Company) => company.city || "-",
+    },
+    {
+      key: "active",
+      label: "Estado",
       render: (company: Company) => (
         <div className="flex items-center gap-2">
-          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-            company.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-          }`}>
-            {company.active ? 'Activa' : 'Inactiva'}
+          <span
+            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+              company.active
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-800"
+            }`}
+          >
+            {company.active ? "Activa" : "Inactiva"}
           </span>
           {!company.active && (
             <button
               onClick={(e) => {
-                e.stopPropagation();
-                handleActivate(company.id);
+                e.stopPropagation()
+                handleActivate(company.id)
               }}
               className="text-teal-600 hover:text-teal-900 font-medium text-xs"
             >
@@ -116,9 +118,9 @@ export default function CompaniesPage() {
             </button>
           )}
         </div>
-      )
+      ),
     },
-  ];
+  ]
 
   if (loading) {
     return (
@@ -128,7 +130,7 @@ export default function CompaniesPage() {
           <p className="text-gray-600">Cargando empresas...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -138,11 +140,11 @@ export default function CompaniesPage() {
         data={companies}
         columns={columns}
         createLink="/dashboard/companies/new"
-        createLabel="Nueva Empresa"
+        createLabel="Nueva Perusahaan"
         onEdit={(company) => router.push(`/dashboard/companies/${company.id}`)}
         emptyMessage="No hay empresas registradas"
         showColumnToggle={false}
       />
     </div>
-  );
+  )
 }

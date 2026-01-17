@@ -83,6 +83,7 @@ export default function DashboardPage() {
   }
 
   const getCurrencySymbol = (currency: string) => {
+    console.log({ currency })
     const symbols: { [key: string]: string } = {
       EUR: "€",
       USD: "$",

@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
+import { NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import { z } from "zod"
 
 const publicQuoteSchema = z.object({
   companyId: z.string(),
@@ -10,20 +10,24 @@ const publicQuoteSchema = z.object({
     phone: z.string().min(1),
     address: z.string().optional(),
   }),
-  items: z.array(z.object({
-    productId: z.string(),
-    description: z.string(),
-    quantity: z.number().positive(),
-    price: z.number(),
-    tax: z.number().min(0).max(100),
-  })).min(1),
-  currency: z.string().default('EUR'),
-});
+  items: z
+    .array(
+      z.object({
+        productId: z.string(),
+        description: z.string(),
+        quantity: z.number().positive(),
+        price: z.number(),
+        tax: z.number().min(0).max(100),
+      }),
+    )
+    .min(1),
+  currency: z.string().default("EUR"),
+})
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const validatedData = publicQuoteSchema.parse(body);
+    const body = await request.json()
+    const validatedData = publicQuoteSchema.parse(body)
 
     // Verificar que la empresa existe
     const company = await prisma.company.findUnique({
@@ -34,13 +38,13 @@ export async function POST(request: Request) {
         quotePrefix: true,
         quoteNextNumber: true,
       },
-    });
+    })
 
     if (!company) {
       return NextResponse.json(
-        { error: 'Empresa no encontrada' },
-        { status: 404 }
-      );
+        { error: "Perusahaan no encontrada" },
+        { status: 404 },
+      )
     }
 
     // Buscar si el contacto ya existe por email o teléfono
@@ -52,7 +56,7 @@ export async function POST(request: Request) {
           { phone: validatedData.contact.phone },
         ],
       },
-    });
+    })
 
     // Si no existe, crear el contacto
     if (!contact) {
@@ -67,7 +71,7 @@ export async function POST(request: Request) {
           isCustomer: true,
           isSupplier: false,
         },
-      });
+      })
     } else {
       // Si existe, actualizar sus datos
       contact = await prisma.contact.update({
@@ -78,30 +82,36 @@ export async function POST(request: Request) {
           phone: validatedData.contact.phone,
           address: validatedData.contact.address || contact.address,
         },
-      });
+      })
     }
 
     // Generar número de cotización
-    const currentYear = new Date().getFullYear();
-    const quoteNumber = `${company.quotePrefix || 'COT'}-${currentYear}-${String(company.quoteNextNumber || 1).padStart(3, '0')}`;
+    const currentYear = new Date().getFullYear()
+    const quoteNumber = `${company.quotePrefix || "COT"}-${currentYear}-${String(company.quoteNextNumber || 1).padStart(3, "0")}`
 
     // Calcular totales
-    const itemsWithTotals = validatedData.items.map(item => {
-      const subtotal = item.quantity * item.price;
-      const taxAmount = subtotal * (item.tax / 100);
-      const total = subtotal + taxAmount;
-      
+    const itemsWithTotals = validatedData.items.map((item) => {
+      const subtotal = item.quantity * item.price
+      const taxAmount = subtotal * (item.tax / 100)
+      const total = subtotal + taxAmount
+
       return {
         ...item,
         subtotal,
         taxAmount,
         total,
-      };
-    });
+      }
+    })
 
-    const subtotal = itemsWithTotals.reduce((sum, item) => sum + item.subtotal, 0);
-    const taxAmount = itemsWithTotals.reduce((sum, item) => sum + item.taxAmount, 0);
-    const total = itemsWithTotals.reduce((sum, item) => sum + item.total, 0);
+    const subtotal = itemsWithTotals.reduce(
+      (sum, item) => sum + item.subtotal,
+      0,
+    )
+    const taxAmount = itemsWithTotals.reduce(
+      (sum, item) => sum + item.taxAmount,
+      0,
+    )
+    const total = itemsWithTotals.reduce((sum, item) => sum + item.total, 0)
 
     // Crear la cotización
     const quote = await prisma.quote.create({
@@ -116,10 +126,10 @@ export async function POST(request: Request) {
         subtotal,
         taxAmount,
         total,
-        status: 'QUOTE',
-        notes: 'Cotización generada desde enlace público',
+        status: "QUOTE",
+        notes: "Cotización generada desde enlace público",
         items: {
-          create: itemsWithTotals.map(item => ({
+          create: itemsWithTotals.map((item) => ({
             productId: item.productId,
             description: item.description,
             quantity: item.quantity,
@@ -135,7 +145,7 @@ export async function POST(request: Request) {
         contact: true,
         items: true,
       },
-    });
+    })
 
     // Incrementar el contador de cotizaciones
     await prisma.company.update({
@@ -143,22 +153,22 @@ export async function POST(request: Request) {
       data: {
         quoteNextNumber: (company.quoteNextNumber || 1) + 1,
       },
-    });
+    })
 
-    return NextResponse.json(quote);
+    return NextResponse.json(quote)
   } catch (error) {
-    console.error('Error creating public quote:', error);
-    
+    console.error("Error creating public quote:", error)
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Datos inválidos', details: error.issues },
-        { status: 400 }
-      );
+        { error: "Datos inválidos", details: error.issues },
+        { status: 400 },
+      )
     }
-    
+
     return NextResponse.json(
-      { error: 'Error al crear la cotización' },
-      { status: 500 }
-    );
+      { error: "Error al crear la cotización" },
+      { status: 500 },
+    )
   }
 }

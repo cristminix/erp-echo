@@ -1,19 +1,19 @@
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { getPostBySlug, getAllPosts } from '@/lib/blog';
+import { notFound } from "next/navigation"
+import Link from "next/link"
+import { getPostBySlug, getAllPosts } from "@/lib/blog"
 
 export async function generateStaticParams() {
-  const posts = getAllPosts();
+  const posts = getAllPosts()
   return posts.map((post) => ({
     slug: post.slug,
-  }));
+  }))
 }
 
 export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = getPostBySlug(params.slug);
+  const post = getPostBySlug(params.slug)
 
   if (!post) {
-    notFound();
+    notFound()
   }
 
   return (
@@ -24,11 +24,21 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-gray-800">FalconERP</span>
+              <span className="text-xl font-bold text-gray-800">Echo ERP</span>
             </Link>
             <div className="flex items-center space-x-4">
               <Link href="/blog">
@@ -58,9 +68,13 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
           {/* Breadcrumb */}
           <div className="mb-8">
             <nav className="flex items-center space-x-2 text-sm text-gray-600">
-              <Link href="/" className="hover:text-teal-600">Inicio</Link>
+              <Link href="/" className="hover:text-teal-600">
+                Inicio
+              </Link>
               <span>/</span>
-              <Link href="/blog" className="hover:text-teal-600">Blog</Link>
+              <Link href="/blog" className="hover:text-teal-600">
+                Blog
+              </Link>
               <span>/</span>
               <span className="text-gray-900">{post.category}</span>
             </nav>
@@ -80,58 +94,80 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
 
           {/* Meta Information */}
           <div className="flex items-center gap-4 text-gray-600 mb-8 pb-8 border-b border-gray-200">
-          <div className="flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span>{post.author}</span>
+            <div className="flex items-center gap-2">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+              <span>{post.author}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <time>
+                {new Date(post.date).toLocaleDateString("es-ES", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </time>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <time>
-              {new Date(post.date).toLocaleDateString('es-ES', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </time>
-          </div>
-        </div>
 
-        {/* Featured Image */}
-        {post.image && (
-          <div className="mb-8 rounded-xl overflow-hidden">
-            <img
-              src={post.image}
-              alt={post.title}
-              className="w-full h-auto"
-            />
-          </div>
-        )}
+          {/* Featured Image */}
+          {post.image && (
+            <div className="mb-8 rounded-xl overflow-hidden">
+              <img
+                src={post.image}
+                alt={post.title}
+                className="w-full h-auto"
+              />
+            </div>
+          )}
 
-        {/* Article Body */}
-        <div 
-          className="prose prose-lg max-w-none prose-headings:text-black prose-p:text-black prose-a:text-teal-600 prose-strong:text-black prose-li:text-black prose-ul:text-black prose-ol:text-black prose-code:text-teal-600 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-900 prose-pre:text-gray-100 [&_p]:text-black [&_li]:text-black [&_h1]:text-black [&_h2]:text-black [&_h3]:text-black [&_h4]:text-black"
-          dangerouslySetInnerHTML={{ __html: post.htmlContent || '' }}
-        />
+          {/* Article Body */}
+          <div
+            className="prose prose-lg max-w-none prose-headings:text-black prose-p:text-black prose-a:text-teal-600 prose-strong:text-black prose-li:text-black prose-ul:text-black prose-ol:text-black prose-code:text-teal-600 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-gray-900 prose-pre:text-gray-100 [&_p]:text-black [&_li]:text-black [&_h1]:text-black [&_h2]:text-black [&_h3]:text-black [&_h4]:text-black"
+            dangerouslySetInnerHTML={{ __html: post.htmlContent || "" }}
+          />
 
-        {/* Share Section */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Compartir artículo</h3>
-          <div className="flex gap-3">
-            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all">
-              Facebook
-            </button>
-            <button className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg transition-all">
-              Twitter
-            </button>
-            <button className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-all">
-              LinkedIn
-            </button>
+          {/* Share Section */}
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Compartir artículo
+            </h3>
+            <div className="flex gap-3">
+              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all">
+                Facebook
+              </button>
+              <button className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-lg transition-all">
+                Twitter
+              </button>
+              <button className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-all">
+                LinkedIn
+              </button>
+            </div>
           </div>
-        </div>
 
           {/* Back to Blog */}
           <div className="mt-12">
@@ -139,8 +175,18 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
               href="/blog"
               className="inline-flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
               Volver al Blog
             </Link>
@@ -155,11 +201,21 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
                 </div>
-                <span className="text-xl font-bold">FalconERP</span>
+                <span className="text-xl font-bold">Echo ERP</span>
               </div>
               <p className="text-gray-400">
                 Sistema ERP simple y completo para tu negocio
@@ -168,9 +224,21 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             <div>
               <h4 className="font-semibold mb-4">Enlaces</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><Link href="/" className="hover:text-white">Inicio</Link></li>
-                <li><Link href="/blog" className="hover:text-white">Blog</Link></li>
-                <li><Link href="/dashboard" className="hover:text-white">Dashboard</Link></li>
+                <li>
+                  <Link href="/" className="hover:text-white">
+                    Inicio
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/blog" className="hover:text-white">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard" className="hover:text-white">
+                    Dashboard
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>
@@ -182,10 +250,10 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>© 2025 FalconERP. Todos los derechos reservados.</p>
+            <p>© 2025 Echo ERP. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
     </div>
-  );
+  )
 }

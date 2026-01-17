@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
 
 export async function GET(
   request: Request,
-  { params }: { params: { companyId: string } }
+  { params }: { params: { companyId: string } },
 ) {
   try {
     const company = await prisma.company.findUnique({
@@ -14,21 +14,21 @@ export async function GET(
         logo: true,
         currency: true,
       },
-    });
+    })
 
     if (!company) {
       return NextResponse.json(
-        { error: 'Empresa no encontrada' },
-        { status: 404 }
-      );
+        { error: "Perusahaan no encontrada" },
+        { status: 404 },
+      )
     }
 
-    return NextResponse.json(company);
+    return NextResponse.json(company)
   } catch (error) {
-    console.error('Error fetching company:', error);
+    console.error("Error fetching company:", error)
     return NextResponse.json(
-      { error: 'Error al obtener información de la empresa' },
-      { status: 500 }
-    );
+      { error: "Error al obtener información de la empresa" },
+      { status: 500 },
+    )
   }
 }

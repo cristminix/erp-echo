@@ -1,38 +1,41 @@
 ---
-title: "Novedades FalconERP - Diciembre 2025"
+title: "Novedades Echo ERP - Diciembre 2025"
 description: "Conoce las últimas funcionalidades y mejoras que hemos incorporado al sistema este mes."
 date: "2025-12-09"
 category: "Novedades"
-author: "FalconERP Team"
+author: "Echo ERP Team"
 ---
 
-# Novedades FalconERP - Diciembre 2025
+# Novedades Echo ERP - Diciembre 2025
 
-¡Estamos emocionados de compartir las últimas mejoras y funcionalidades que hemos añadido a FalconERP este mes!
+¡Estamos emocionados de compartir las últimas mejoras y funcionalidades que hemos añadido a Echo ERP este mes!
 
 ## 🚀 Nuevas Funcionalidades
 
 ### API Pública para Integraciones
 
-Ahora puedes integrar FalconERP con tus aplicaciones externas mediante nuestra API REST.
+Ahora puedes integrar Echo ERP con tus aplicaciones externas mediante nuestra API REST.
 
 **Características:**
+
 - Generación de API Keys únicas por empresa
 - Endpoints para consultar facturas, clientes, productos
 - Documentación completa con ejemplos
 - Autenticación segura mediante headers
 
 **Ejemplo de uso:**
+
 ```bash
 curl -X GET https://falconerp.xyz/api/public/invoices \
   -H "X-API-Key: fc_tu_clave_api_aqui"
 ```
 
-### Sistema de Avatares de Usuario
+### Sistema de Avatares de Pengguna
 
 Mejoramos la experiencia visual con fotos de perfil personalizadas.
 
 **Funcionalidades:**
+
 - Carga de imágenes desde el perfil
 - Visualización en el dashboard
 - Formatos soportados: PNG, JPG, JPEG
@@ -60,6 +63,7 @@ Implementamos un sistema de carga que previene el parpadeo de colores al recarga
 ## 📊 Estadísticas de Uso
 
 En el último mes:
+
 - ✅ **+150** nuevas empresas registradas
 - ✅ **+5,000** facturas emitidas
 - ✅ **+2,000** nóminas procesadas
@@ -70,24 +74,28 @@ En el último mes:
 Estamos trabajando en:
 
 ### Dashboard de Analíticas
+
 - Gráficos interactivos de ventas
 - Proyecciones de flujo de caja
 - Análisis de rentabilidad por producto
 - Reportes personalizables
 
 ### Módulo de CRM
+
 - Gestión de oportunidades de venta
 - Seguimiento de leads
 - Automatización de emails
 - Pipeline de ventas visual
 
 ### App Móvil
+
 - Versión nativa para iOS y Android
 - Escaneo de productos con cámara
 - Consulta de inventario offline
 - Notificaciones push
 
 ### Integraciones
+
 - Sincronización con bancos
 - Integración con plataformas de e-commerce
 - Conectores para marketplaces
@@ -119,4 +127,4 @@ Gracias a todos nuestros usuarios por su feedback constante. Sus sugerencias nos
 
 ---
 
-¿Aún no usas FalconERP? [Crea tu cuenta gratis](/register)
+¿Aún no usas Echo ERP? [Crea tu cuenta gratis](/register)

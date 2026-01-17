@@ -1,4 +1,4 @@
-# 🚀 FalconERP - Sistem ERP Lengkap
+# 🚀 Echo ERP - Sistem ERP Lengkap
 
 Sistem ERP modern dan lengkap dikembangkan dengan Next.js 14, dirancang untuk usaha kecil dan menengah yang perlu mengelola operasi secara efisien dan profesional.
 
@@ -237,7 +237,7 @@ Proyek ini dilisensikan di bawah Lisensi MIT. Lihat berkas `LICENSE` untuk detai
 **Marlon Falcon Hernandez**
 
 - GitHub: [@falconsoft3d](https://github.com/falconsoft3d)
-- Proyek: [FalconERP](https://github.com/falconsoft3d/falconerp.xyz)
+- Proyek: [Echo ERP](https://github.com/falconsoft3d/falconerp.xyz)
 
 ## 🌟 Ucapan Terima Kasih
 

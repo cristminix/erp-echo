@@ -1,8 +1,8 @@
-# Panduan Menambahkan User ke Database - FalconERP
+# Panduan Menambahkan User ke Database - Echo ERP
 
 ## Deskripsi Umum
 
-Proyek FalconERP menggunakan sistem manajemen pengguna berbasis database PostgreSQL dengan Prisma ORM. Sistem ini mendukung hierarki pengguna dimana satu pengguna utama dapat membuat pengguna-pengguna tambahan.
+Proyek Echo ERP menggunakan sistem manajemen pengguna berbasis database PostgreSQL dengan Prisma ORM. Sistem ini mendukung hierarki pengguna dimana satu pengguna utama dapat membuat pengguna-pengguna tambahan.
 
 ## Skema Model User
 
@@ -27,14 +27,14 @@ model User {
   // Coste por hora para cálculo de asistencia
   hourlyRate Decimal? @db.Decimal(10, 2) // Coste por hora del empleado
 
-  // Usuario que lo creó (null si es el usuario principal registrado)
+  // Pengguna que lo creó (null si es el usuario principal registrado)
   createdById String?
   createdBy   User?    @relation("UserCreator", fields: [createdById], references: [id], onDelete: Cascade)
 
   // Usuarios que este usuario ha creado
   createdUsers User[] @relation("UserCreator")
 
-  // Empresa asignada por defecto
+  // Perusahaan asignada por defecto
   defaultCompanyId String?
   defaultCompany   Company? @relation("DefaultCompany", fields: [defaultCompanyId], references: [id], onDelete: SetNull)
 
@@ -253,4 +253,4 @@ export async function addUser(userData: CreateUserInput) {
 }
 ```
 
-Dengan sistem ini, FalconERP mendukung manajemen pengguna yang fleksibel dengan kemampuan hierarki dan pembagian data antar pengguna dalam organisasi yang sama.
+Dengan sistem ini, Echo ERP mendukung manajemen pengguna yang fleksibel dengan kemampuan hierarki dan pembagian data antar pengguna dalam organisasi yang sama.

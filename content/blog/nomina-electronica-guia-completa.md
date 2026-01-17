@@ -3,7 +3,7 @@ title: "Nómina Electrónica: Todo lo que Debes Saber"
 description: "Guía completa sobre la implementación de nómina electrónica y sus beneficios para tu empresa."
 date: "2025-12-08"
 category: "Recursos Humanos"
-author: "FalconERP Team"
+author: "Echo ERP Team"
 ---
 
 # Nómina Electrónica: Todo lo que Debes Saber
@@ -37,11 +37,12 @@ Es un documento digital que sustituye al comprobante de pago físico, con valide
 3. **Validación**: Conexión con la entidad tributaria correspondiente
 4. **Almacenamiento**: Sistema seguro para guardar los documentos electrónicos
 
-## Proceso de implementación con FalconERP
+## Proceso de implementación con Echo ERP
 
 ### Paso 1: Configuración inicial
 
 Configura tu empresa con los datos fiscales necesarios:
+
 - RUC/NIT
 - Certificado digital
 - Parámetros de nómina
@@ -49,6 +50,7 @@ Configura tu empresa con los datos fiscales necesarios:
 ### Paso 2: Carga de empleados
 
 Registra la información completa de tus empleados:
+
 - Datos personales
 - Tipo de contrato
 - Salario base
@@ -57,6 +59,7 @@ Registra la información completa de tus empleados:
 ### Paso 3: Generación de nómina
 
 El sistema calcula automáticamente:
+
 - Salario bruto
 - Deducciones (impuestos, seguridad social)
 - Bonificaciones y horas extras
@@ -64,7 +67,8 @@ El sistema calcula automáticamente:
 
 ### Paso 4: Emisión y envío
 
-FalconERP se encarga de:
+Echo ERP se encarga de:
+
 - Generar el XML con firma digital
 - Validar ante la entidad tributaria
 - Enviar al empleado por email
@@ -91,8 +95,8 @@ Una nómina electrónica debe contener:
 
 ## Conclusión
 
-La nómina electrónica no solo es una obligación legal, sino una oportunidad para modernizar tus procesos de RRHH. Con FalconERP, la implementación es sencilla y obtienes todos los beneficios de la automatización.
+La nómina electrónica no solo es una obligación legal, sino una oportunidad para modernizar tus procesos de RRHH. Con Echo ERP, la implementación es sencilla y obtienes todos los beneficios de la automatización.
 
 ---
 
-¿Necesitas automatizar tu nómina? [Empieza ahora con FalconERP](/register)
+¿Necesitas automatizar tu nómina? [Empieza ahora con Echo ERP](/register)

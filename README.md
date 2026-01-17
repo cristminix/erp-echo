@@ -1,4 +1,4 @@
-# 🚀 FalconERP - Sistema ERP Completo
+# 🚀 Echo ERP - Sistema ERP Completo
 
 Sistema ERP moderno y completo desarrollado con Next.js 14, diseñado para pequeñas y medianas empresas que necesitan gestionar sus operaciones de forma eficiente y profesional.
 
@@ -9,25 +9,29 @@ Sistema ERP moderno y completo desarrollado con Next.js 14, diseñado para peque
 
 ## 📋 Características Principales
 
-### 🏢 Multi-Empresa
+### 🏢 Multi-Perusahaan
+
 - ✅ Gestión de múltiples empresas desde una sola cuenta
 - ✅ Temas personalizados por empresa (colores primarios y secundarios)
 - ✅ Configuración independiente de numeración de facturas
 - ✅ Logo y datos fiscales personalizados
 
 ### 📦 Gestión de Productos
+
 - ✅ Catálogo completo con imágenes
 - ✅ Control de stock e inventario
 - ✅ Categorías y precios con IVA
 - ✅ Importación desde Odoo
 
 ### 👥 Gestión de Contactos
+
 - ✅ Base de datos de clientes y proveedores
 - ✅ Información completa (NIF, dirección, contacto)
 - ✅ Historial de facturas
 - ✅ Importación desde Odoo
 
 ### 📄 Facturación Completa
+
 - ✅ Facturas de venta y compra
 - ✅ Cálculo automático de IVA y totales
 - ✅ Generación de PDF profesionales
@@ -37,6 +41,7 @@ Sistema ERP moderno y completo desarrollado con Next.js 14, diseñado para peque
 - ✅ Importación masiva desde Excel
 
 ### 💰 Punto de Venta (POS)
+
 - ✅ Interfaz intuitiva con imágenes de productos
 - ✅ Filtrado por categorías
 - ✅ Búsqueda rápida
@@ -44,23 +49,27 @@ Sistema ERP moderno y completo desarrollado con Next.js 14, diseñado para peque
 - ✅ Descuentos y cálculos automáticos
 
 ### 🎯 CRM
+
 - ✅ Gestión de oportunidades de venta
 - ✅ Pipeline personalizable con drag & drop
 - ✅ Etapas configurables
 - ✅ Formularios públicos para captación de leads
 
 ### 📊 Proyectos y Tareas
+
 - ✅ Gestión de proyectos
 - ✅ Control de tareas por proyecto
 - ✅ Estados y prioridades
 - ✅ Asignación a usuarios
 
 ### 👤 Control de Asistencia
+
 - ✅ Registro de entrada/salida
 - ✅ Cálculo de horas trabajadas
 - ✅ Historial por empleado
 
 ### 🔐 Autenticación y Seguridad
+
 - ✅ Sistema de login/registro
 - ✅ JWT para autenticación
 - ✅ Verificación de email
@@ -68,16 +77,19 @@ Sistema ERP moderno y completo desarrollado con Next.js 14, diseñado para peque
 - ✅ Roles de usuario
 
 ### 🌐 API REST
+
 - ✅ API Key por empresa
 - ✅ Tokens de subida de archivos
 - ✅ Endpoints documentados
 
 ### 📧 Sistema de Email
+
 - ✅ Configuración SMTP personalizada
 - ✅ Plantillas de email
 - ✅ Envío de facturas automático
 
 ### 🔄 Integración con Odoo
+
 - ✅ Importación de productos
 - ✅ Importación de contactos
 - ✅ Sincronización de datos
@@ -100,19 +112,21 @@ Sistema ERP moderno y completo desarrollado con Next.js 14, diseñado para peque
 
 ### Requisitos Previos
 
-- Node.js 18+ 
+- Node.js 18+
 - PostgreSQL 14+
 - npm o yarn
 
 ### Pasos de Instalación
 
 1. **Clonar el repositorio**
+
 ```bash
 git clone https://github.com/falconsoft3d/falconerp.xyz.git
 cd falconerp.xyz
 ```
 
 2. **Instalar dependencias**
+
 ```bash
 npm install
 ```
@@ -139,6 +153,7 @@ SMTP_PASSWORD="tu-contraseña-app"
 ```
 
 4. **Configurar la base de datos**
+
 ```bash
 # Generar cliente de Prisma
 npx prisma generate
@@ -151,6 +166,7 @@ npx prisma db seed
 ```
 
 5. **Ejecutar en desarrollo**
+
 ```bash
 npm run dev
 ```
@@ -166,6 +182,7 @@ La aplicación estará disponible en `http://localhost:3000`
    - Configura las variables de entorno
 
 2. **Variables de entorno en Vercel**
+
    ```
    DATABASE_URL
    JWT_SECRET
@@ -218,8 +235,9 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 ## 👤 Autor
 
 **Marlon Falcon Hernandez**
+
 - GitHub: [@falconsoft3d](https://github.com/falconsoft3d)
-- Proyecto: [FalconERP](https://github.com/falconsoft3d/falconerp.xyz)
+- Proyecto: [Echo ERP](https://github.com/falconsoft3d/falconerp.xyz)
 
 ## 🌟 Agradecimientos
 

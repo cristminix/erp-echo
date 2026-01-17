@@ -1,71 +1,80 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { verifyToken } from '@/lib/jwt';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import { verifyToken } from "@/lib/jwt"
+import { z } from "zod"
 
 // Schema de validación para crear seguimiento
 const createTrackingSchema = z.object({
   companyId: z.string(),
   contactId: z.string().optional().nullable(),
   productId: z.string().optional().nullable(),
-  trackingNumber: z.string().min(1, 'El número de seguimiento es requerido'),
-  description: z.string().min(1, 'La descripción es requerida'),
-  status: z.enum(['REQUESTED', 'RECEIVED', 'PAID', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED']).default('REQUESTED'),
+  trackingNumber: z.string().min(1, "El número de seguimiento es requerido"),
+  description: z.string().min(1, "La descripción es requerida"),
+  status: z
+    .enum([
+      "REQUESTED",
+      "RECEIVED",
+      "PAID",
+      "SHIPPED",
+      "IN_TRANSIT",
+      "DELIVERED",
+    ])
+    .default("REQUESTED"),
   origin: z.string().optional().nullable(),
   destination: z.string().optional().nullable(),
   carrier: z.string().optional().nullable(),
   weight: z.number().optional().nullable(),
   notes: z.string().optional().nullable(),
-});
+})
 
 // GET - Listar todos los seguimientos
 export async function GET(request: NextRequest) {
   try {
-    const token = request.cookies.get('token')?.value;
+    const token = request.cookies.get("token")?.value
     if (!token) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const payload = await verifyToken(token);
-    
+    const payload = await verifyToken(token)
+
     if (!payload || !payload.userId) {
       return NextResponse.json(
-        { error: 'Usuario no identificado' },
-        { status: 401 }
-      );
+        { error: "Pengguna no identificado" },
+        { status: 401 },
+      )
     }
 
-    const userId = payload.userId;
+    const userId = payload.userId
 
     // Obtener parámetros de consulta
-    const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get('companyId');
-    const status = searchParams.get('status');
-    const contactId = searchParams.get('contactId');
+    const { searchParams } = new URL(request.url)
+    const companyId = searchParams.get("companyId")
+    const status = searchParams.get("status")
+    const contactId = searchParams.get("contactId")
 
     if (!companyId) {
       return NextResponse.json(
-        { error: 'El ID de la empresa es requerido' },
-        { status: 400 }
-      );
+        { error: "El ID de la empresa es requerido" },
+        { status: 400 },
+      )
     }
 
     // Verificar que el usuario tenga acceso a la empresa
     const company = await prisma.company.findFirst({
       where: { id: companyId, userId },
-    });
+    })
 
     if (!company) {
       return NextResponse.json(
-        { error: 'Empresa no encontrada' },
-        { status: 404 }
-      );
+        { error: "Perusahaan no encontrada" },
+        { status: 404 },
+      )
     }
 
     // Construir filtros
-    const where: any = { companyId, userId };
-    if (status) where.status = status;
-    if (contactId) where.contactId = contactId;
+    const where: any = { companyId, userId }
+    if (status) where.status = status
+    if (contactId) where.contactId = contactId
 
     // Obtener seguimientos con relaciones
     const trackings = await prisma.tracking.findMany({
@@ -104,51 +113,51 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
-    });
+      orderBy: { createdAt: "desc" },
+    })
 
-    return NextResponse.json(trackings);
+    return NextResponse.json(trackings)
   } catch (error) {
-    console.error('Error al obtener seguimientos:', error);
+    console.error("Error al obtener seguimientos:", error)
     return NextResponse.json(
-      { error: 'Error al obtener seguimientos' },
-      { status: 500 }
-    );
+      { error: "Error al obtener seguimientos" },
+      { status: 500 },
+    )
   }
 }
 
 // POST - Crear nuevo seguimiento
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get('token')?.value;
+    const token = request.cookies.get("token")?.value
     if (!token) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const payload = await verifyToken(token);
-    
+    const payload = await verifyToken(token)
+
     if (!payload || !payload.userId) {
       return NextResponse.json(
-        { error: 'Usuario no identificado' },
-        { status: 401 }
-      );
+        { error: "Pengguna no identificado" },
+        { status: 401 },
+      )
     }
 
-    const userId = payload.userId;
+    const userId = payload.userId
 
-    const body = await request.json();
-    const validatedData = createTrackingSchema.parse(body);
+    const body = await request.json()
+    const validatedData = createTrackingSchema.parse(body)
 
     // Verificar que el usuario tenga acceso a la empresa
     const company = await prisma.company.findFirst({
       where: { id: validatedData.companyId, userId },
-    });
+    })
 
     if (!company) {
       return NextResponse.json(
-        { error: 'Empresa no encontrada' },
-        { status: 404 }
-      );
+        { error: "Perusahaan no encontrada" },
+        { status: 404 },
+      )
     }
 
     // Si se proporciona contactId, verificar que existe y pertenece a la empresa
@@ -159,13 +168,13 @@ export async function POST(request: NextRequest) {
           companyId: validatedData.companyId,
           userId,
         },
-      });
+      })
 
       if (!contact) {
         return NextResponse.json(
-          { error: 'Contacto no encontrado' },
-          { status: 404 }
-        );
+          { error: "Contacto no encontrado" },
+          { status: 404 },
+        )
       }
     }
 
@@ -196,22 +205,22 @@ export async function POST(request: NextRequest) {
           },
         },
       },
-    });
+    })
 
-    return NextResponse.json(tracking, { status: 201 });
+    return NextResponse.json(tracking, { status: 201 })
   } catch (error) {
-    console.error('Error al crear seguimiento:', error);
-    
+    console.error("Error al crear seguimiento:", error)
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Datos de entrada inválidos', details: error.issues },
-        { status: 400 }
-      );
+        { error: "Datos de entrada inválidos", details: error.issues },
+        { status: 400 },
+      )
     }
 
     return NextResponse.json(
-      { error: 'Error al crear seguimiento' },
-      { status: 500 }
-    );
+      { error: "Error al crear seguimiento" },
+      { status: 500 },
+    )
   }
 }

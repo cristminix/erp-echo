@@ -1,121 +1,124 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 interface Company {
-  id: string;
-  name: string;
+  id: string
+  name: string
 }
 
 interface Contact {
-  id: string;
-  name: string;
+  id: string
+  name: string
 }
 
 interface Product {
-  id: string;
-  name: string;
-  code: string;
-  price: number;
+  id: string
+  name: string
+  code: string
+  price: number
 }
 
 export default function NewTrackingPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [contacts, setContacts] = useState<Contact[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [formData, setFormData] = useState({
-    companyId: '',
-    contactId: '',
-    productId: '',
-    trackingNumber: '',
-    description: '',
-    origin: '',
-    destination: '',
-    carrier: '',
-    weight: '',
-    notes: '',
-  });
+    companyId: "",
+    contactId: "",
+    productId: "",
+    trackingNumber: "",
+    description: "",
+    origin: "",
+    destination: "",
+    carrier: "",
+    weight: "",
+    notes: "",
+  })
 
   useEffect(() => {
-    fetchCompanies();
-  }, []);
+    fetchCompanies()
+  }, [])
 
   useEffect(() => {
     if (formData.companyId) {
-      fetchContacts(formData.companyId);
-      fetchProducts(formData.companyId);
+      fetchContacts(formData.companyId)
+      fetchProducts(formData.companyId)
       if (!formData.trackingNumber) {
-        generateTrackingNumber(formData.companyId);
+        generateTrackingNumber(formData.companyId)
       }
     }
-  }, [formData.companyId]);
+  }, [formData.companyId])
 
   const generateTrackingNumber = async (companyId: string) => {
     try {
-      const response = await fetch(`/api/tracking?companyId=${companyId}`);
+      const response = await fetch(`/api/tracking?companyId=${companyId}`)
       if (response.ok) {
-        const trackings = await response.json();
-        const lastNumber = trackings.length > 0 
-          ? Math.max(...trackings.map((t: any) => {
-              const match = t.trackingNumber.match(/ENV(\d+)/);
-              return match ? parseInt(match[1]) : 0;
-            }))
-          : 0;
-        const nextNumber = (lastNumber + 1).toString().padStart(3, '0');
-        setFormData(prev => ({ ...prev, trackingNumber: `ENV${nextNumber}` }));
+        const trackings = await response.json()
+        const lastNumber =
+          trackings.length > 0
+            ? Math.max(
+                ...trackings.map((t: any) => {
+                  const match = t.trackingNumber.match(/ENV(\d+)/)
+                  return match ? parseInt(match[1]) : 0
+                }),
+              )
+            : 0
+        const nextNumber = (lastNumber + 1).toString().padStart(3, "0")
+        setFormData((prev) => ({ ...prev, trackingNumber: `ENV${nextNumber}` }))
       }
     } catch (error) {
-      console.error('Error al generar número de seguimiento:', error);
-      setFormData(prev => ({ ...prev, trackingNumber: 'ENV001' }));
+      console.error("Error al generar número de seguimiento:", error)
+      setFormData((prev) => ({ ...prev, trackingNumber: "ENV001" }))
     }
-  };
+  }
 
   const fetchCompanies = async () => {
     try {
-      const response = await fetch('/api/companies?active=true');
+      const response = await fetch("/api/companies?active=true")
       if (response.ok) {
-        const data = await response.json();
-        setCompanies(data);
+        const data = await response.json()
+        setCompanies(data)
         if (data.length > 0 && !formData.companyId) {
-          setFormData(prev => ({ ...prev, companyId: data[0].id }));
+          setFormData((prev) => ({ ...prev, companyId: data[0].id }))
         }
       }
     } catch (error) {
-      console.error('Error al cargar empresas:', error);
+      console.error("Error al cargar empresas:", error)
     }
-  };
+  }
 
   const fetchContacts = async (companyId: string) => {
     try {
-      const response = await fetch(`/api/contacts?companyId=${companyId}`);
+      const response = await fetch(`/api/contacts?companyId=${companyId}`)
       if (response.ok) {
-        const data = await response.json();
-        setContacts(data);
+        const data = await response.json()
+        setContacts(data)
       }
     } catch (error) {
-      console.error('Error al cargar contactos:', error);
+      console.error("Error al cargar contactos:", error)
     }
-  };
+  }
 
   const fetchProducts = async (companyId: string) => {
     try {
-      const response = await fetch(`/api/products?companyId=${companyId}`);
+      const response = await fetch(`/api/products?companyId=${companyId}`)
       if (response.ok) {
-        const data = await response.json();
-        setProducts(data);
+        const data = await response.json()
+        setProducts(data)
       }
     } catch (error) {
-      console.error('Error al cargar productos:', error);
+      console.error("Error al cargar productos:", error)
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+    e.preventDefault()
+    setLoading(true)
 
     try {
       const payload = {
@@ -126,35 +129,39 @@ export default function NewTrackingPage() {
         carrier: formData.carrier || null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
         notes: formData.notes || null,
-      };
+      }
 
-      const response = await fetch('/api/tracking', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/tracking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      });
+      })
 
       if (response.ok) {
-        const data = await response.json();
-        router.push(`/dashboard/tracking/${data.id}`);
+        const data = await response.json()
+        router.push(`/dashboard/tracking/${data.id}`)
       } else {
-        const error = await response.json();
-        alert(error.error || 'Error al crear seguimiento');
+        const error = await response.json()
+        alert(error.error || "Error al crear seguimiento")
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('Error al crear seguimiento');
+      console.error("Error:", error)
+      alert("Error al crear seguimiento")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    });
-  };
+    })
+  }
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -163,21 +170,33 @@ export default function NewTrackingPage() {
           href="/dashboard/tracking"
           className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
         >
-          <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg
+            className="mr-2 w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Volver a Seguimientos
         </Link>
       </div>
 
       <div className="bg-white shadow-md rounded-lg p-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">📦 Nuevo Seguimiento</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+          📦 Nuevo Seguimiento
+        </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Empresa */}
+          {/* Perusahaan */}
           <div>
             <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Empresa <span className="text-red-500">*</span>
+              Perusahaan <span className="text-red-500">*</span>
             </label>
             <select
               name="companyId"
@@ -364,19 +383,34 @@ export default function NewTrackingPage() {
             >
               {loading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Creando...
                 </>
               ) : (
-                'Crear Seguimiento'
+                "Crear Seguimiento"
               )}
             </button>
           </div>
         </form>
       </div>
     </div>
-  );
+  )
 }

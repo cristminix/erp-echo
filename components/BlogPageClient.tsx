@@ -1,21 +1,25 @@
-'use client';
+"use client"
 
-import { useState } from 'react';
-import Link from 'next/link';
-import BlogCard from '@/components/BlogCard';
-import { BlogPostMetadata } from '@/lib/blog';
+import { useState } from "react"
+import Link from "next/link"
+import BlogCard from "@/components/BlogCard"
+import { BlogPostMetadata } from "@/lib/blog"
 
 interface BlogPageClientProps {
-  posts: BlogPostMetadata[];
-  categories: string[];
+  posts: BlogPostMetadata[]
+  categories: string[]
 }
 
-export default function BlogPageClient({ posts, categories }: BlogPageClientProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
+export default function BlogPageClient({
+  posts,
+  categories,
+}: BlogPageClientProps) {
+  const [selectedCategory, setSelectedCategory] = useState<string>("Todos")
 
-  const filteredPosts = selectedCategory === 'Todos'
-    ? posts
-    : posts.filter(post => post.category === selectedCategory);
+  const filteredPosts =
+    selectedCategory === "Todos"
+      ? posts
+      : posts.filter((post) => post.category === selectedCategory)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
@@ -25,11 +29,21 @@ export default function BlogPageClient({ posts, categories }: BlogPageClientProp
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-gray-800">FalconERP</span>
+              <span className="text-xl font-bold text-gray-800">Echo ERP</span>
             </Link>
             <div className="flex items-center space-x-4">
               <Link href="/">
@@ -57,10 +71,11 @@ export default function BlogPageClient({ posts, categories }: BlogPageClientProp
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Blog de FalconERP
+              Blog de Echo ERP
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Aprende sobre gestión empresarial, facturación, inventarios, recursos humanos y más
+              Aprende sobre gestión empresarial, facturación, inventarios,
+              recursos humanos y más
             </p>
           </div>
         </div>
@@ -72,30 +87,32 @@ export default function BlogPageClient({ posts, categories }: BlogPageClientProp
         <div className="mb-8">
           <div className="flex flex-wrap gap-3 justify-center">
             <button
-              onClick={() => setSelectedCategory('Todos')}
+              onClick={() => setSelectedCategory("Todos")}
               className={`px-6 py-2 rounded-full font-medium transition-all ${
-                selectedCategory === 'Todos'
-                  ? 'bg-teal-600 text-white shadow-md'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                selectedCategory === "Todos"
+                  ? "bg-teal-600 text-white shadow-md"
+                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
               }`}
             >
               Todos ({posts.length})
             </button>
             {categories.map((category) => {
-              const count = posts.filter(post => post.category === category).length;
+              const count = posts.filter(
+                (post) => post.category === category,
+              ).length
               return (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
                   className={`px-6 py-2 rounded-full font-medium transition-all ${
                     selectedCategory === category
-                      ? 'bg-teal-600 text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                      ? "bg-teal-600 text-white shadow-md"
+                      : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
                   }`}
                 >
                   {category} ({count})
                 </button>
-              );
+              )
             })}
           </div>
         </div>
@@ -123,11 +140,21 @@ export default function BlogPageClient({ posts, categories }: BlogPageClientProp
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
                 </div>
-                <span className="text-xl font-bold">FalconERP</span>
+                <span className="text-xl font-bold">Echo ERP</span>
               </div>
               <p className="text-gray-400">
                 Sistema ERP simple y completo para tu negocio
@@ -136,9 +163,21 @@ export default function BlogPageClient({ posts, categories }: BlogPageClientProp
             <div>
               <h4 className="font-semibold mb-4">Enlaces</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><Link href="/" className="hover:text-white">Inicio</Link></li>
-                <li><Link href="/blog" className="hover:text-white">Blog</Link></li>
-                <li><Link href="/dashboard" className="hover:text-white">Dashboard</Link></li>
+                <li>
+                  <Link href="/" className="hover:text-white">
+                    Inicio
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/blog" className="hover:text-white">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard" className="hover:text-white">
+                    Dashboard
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>
@@ -150,10 +189,10 @@ export default function BlogPageClient({ posts, categories }: BlogPageClientProp
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>© 2025 FalconERP. Todos los derechos reservados.</p>
+            <p>© 2025 Echo ERP. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
     </div>
-  );
+  )
 }

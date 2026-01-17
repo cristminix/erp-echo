@@ -218,7 +218,7 @@ export default function LoginPage() {
                     />
                   </svg>
                 </div>
-                <span className="text-xl font-bold">FalconERP</span>
+                <span className="text-xl font-bold">Echo ERP</span>
               </div>
               <p className="text-gray-400">
                 Sistema ERP simple y completo para tu negocio
@@ -253,7 +253,7 @@ export default function LoginPage() {
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>© 2025 FalconERP. Todos los derechos reservados.</p>
+            <p>© 2025 Echo ERP. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>

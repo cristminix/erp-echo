@@ -1,4 +1,4 @@
-# Entity Relationship Diagram (ERD) FalconERP
+# Entity Relationship Diagram (ERD) Echo ERP
 
 Diagram ini dibuat berdasarkan skema Prisma di `prisma/schema.prisma`.
 
@@ -527,4 +527,4 @@ erDiagram
 - Relasi `||--||` menunjukkan one-to-one (tidak digunakan banyak di sini).
 - Enum dan tipe data lain dihilangkan untuk kesederhanaan.
 
-Diagram ini memberikan gambaran visual tentang hubungan antar tabel dalam database FalconERP. Untuk detail lengkap tipe data dan konstrain, lihat file `prisma/schema.prisma`.
+Diagram ini memberikan gambaran visual tentang hubungan antar tabel dalam database Echo ERP. Untuk detail lengkap tipe data dan konstrain, lihat file `prisma/schema.prisma`.

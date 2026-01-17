@@ -1,35 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import nodemailer from 'nodemailer';
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import nodemailer from "nodemailer"
 
 // POST - Solicitar código de recuperación
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json();
+    const { email } = await request.json()
 
     if (!email) {
       return NextResponse.json(
-        { error: 'El email es requerido' },
-        { status: 400 }
-      );
+        { error: "El email es requerido" },
+        { status: 400 },
+      )
     }
 
     // Buscar usuario
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
-    });
+    })
 
     // Por seguridad, siempre devolvemos éxito aunque el usuario no exista
     if (!user) {
       return NextResponse.json({
-        message: 'Si el correo existe, recibirás un código de recuperación',
-      });
+        message: "Si el correo existe, recibirás un código de recuperación",
+      })
     }
 
     // Generar código de 6 dígitos
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiry = new Date();
-    expiry.setHours(expiry.getHours() + 1); // Válido por 1 hora
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000,
+    ).toString()
+    const expiry = new Date()
+    expiry.setHours(expiry.getHours() + 1) // Válido por 1 hora
 
     // Guardar código en la BD
     await prisma.user.update({
@@ -38,39 +40,41 @@ export async function POST(request: NextRequest) {
         verificationCode,
         verificationCodeExpiry: expiry,
       },
-    });
+    })
 
     // Enviar email
     try {
-      await sendRecoveryEmail(user.email, user.name, verificationCode);
+      await sendRecoveryEmail(user.email, user.name, verificationCode)
     } catch (emailError) {
-      console.error('Error enviando email de recuperación:', emailError);
+      console.error("Error enviando email de recuperación:", emailError)
     }
 
     return NextResponse.json({
-      message: 'Si el correo existe, recibirás un código de recuperación',
-    });
+      message: "Si el correo existe, recibirás un código de recuperación",
+    })
   } catch (error) {
-    console.error('Error en forgot-password:', error);
+    console.error("Error en forgot-password:", error)
     return NextResponse.json(
-      { error: 'Error al procesar la solicitud' },
-      { status: 500 }
-    );
+      { error: "Error al procesar la solicitud" },
+      { status: 500 },
+    )
   }
 }
 
 async function sendRecoveryEmail(to: string, name: string, code: string) {
-  const smtpHost = process.env.SMTP_HOST;
-  const smtpPort = parseInt(process.env.SMTP_PORT || '587');
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPassword = process.env.SMTP_PASSWORD;
-  const smtpFrom = process.env.SMTP_FROM || 'noreply@falconerp.xyz';
+  const smtpHost = process.env.SMTP_HOST
+  const smtpPort = parseInt(process.env.SMTP_PORT || "587")
+  const smtpUser = process.env.SMTP_USER
+  const smtpPassword = process.env.SMTP_PASSWORD
+  const smtpFrom = process.env.SMTP_FROM || "noreply@falconerp.xyz"
 
   if (!smtpHost || !smtpUser || !smtpPassword) {
-    console.log('⚠️  Configuración SMTP no completa.');
-    console.log('📧 Código de recuperación para', to, ':', code);
-    console.log('💡 Configura SMTP_HOST, SMTP_USER y SMTP_PASSWORD en .env para enviar emails');
-    return;
+    console.log("⚠️  Configuración SMTP no completa.")
+    console.log("📧 Código de recuperación para", to, ":", code)
+    console.log(
+      "💡 Configura SMTP_HOST, SMTP_USER y SMTP_PASSWORD en .env para enviar emails",
+    )
+    return
   }
 
   const transporter = nodemailer.createTransport({
@@ -82,9 +86,9 @@ async function sendRecoveryEmail(to: string, name: string, code: string) {
       pass: smtpPassword,
     },
     tls: {
-      rejectUnauthorized: false
-    }
-  });
+      rejectUnauthorized: false,
+    },
+  })
 
   const html = `
         <!DOCTYPE html>
@@ -122,7 +126,7 @@ async function sendRecoveryEmail(to: string, name: string, code: string) {
               <p>Para restablecer tu contraseña, ingresa este código en la página de recuperación.</p>
             </div>
             <div class="footer">
-              <p>© 2025 FalconERP. Todos los derechos reservados.</p>
+              <p>© 2025 Echo ERP. Todos los derechos reservados.</p>
             </div>
           </div>
         </body>
@@ -130,14 +134,14 @@ async function sendRecoveryEmail(to: string, name: string, code: string) {
       </div>
     </body>
     </html>
-  `;
+  `
 
   await transporter.sendMail({
     from: smtpFrom,
     to,
-    subject: 'Código de recuperación de contraseña - FalconERP',
+    subject: "Código de recuperación de contraseña - Echo ERP",
     html,
-  });
+  })
 
-  console.log('✅ Email de recuperación enviado a:', to);
+  console.log("✅ Email de recuperación enviado a:", to)
 }
