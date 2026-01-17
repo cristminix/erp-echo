@@ -1,27 +1,27 @@
 #!/bin/bash
 
-# Script de seguridad para Prisma
-# Evita el uso accidental de comandos destructivos
+# Skrip keamanan untuk Prisma
+# Mencegah penggunaan perintah destruktif secara tidak sengaja
 
 COMMAND="$@"
 
-# Bloquear --force-reset
+# Memblokir --force-reset
 if [[ "$COMMAND" == *"--force-reset"* ]]; then
-    echo "❌ ERROR: --force-reset está BLOQUEADO"
-    echo "Este comando ELIMINA TODA LA BASE DE DATOS"
+    echo "❌ ERROR: --force-reset telah DIBLOKIR"
+    echo "Perintah ini MENGHAPUS SEMUA DATA DATABASE"
     echo ""
-    echo "Si realmente necesitas hacerlo:"
-    echo "1. Haz un backup: pg_dump tu_database > backup.sql"
-    echo "2. Confirma escribiendo: CONFIRMO_BORRAR_TODO"
-    read -p "Escribe para confirmar: " confirmacion
+    echo "Jika Anda benar-benar perlu melakukannya:"
+    echo "1. Buat cadangan: pg_dump nama_database_anda > backup.sql"
+    echo "2. Konfirmasi dengan menulis: SAYA_SETUJU_HAPUS_SEMUA"
+    read -p "Tulis untuk mengonfirmasi: " confirmasi
     
-    if [ "$confirmacion" != "CONFIRMO_BORRAR_TODO" ]; then
-        echo "❌ Operación cancelada"
+    if [ "$confirmasi" != "SAYA_SETUJU_HAPUS_SEMUA" ]; then
+        echo "❌ Operasi dibatalkan"
         exit 1
     fi
     
-    echo "⚠️  Procediendo con --force-reset..."
+    echo "⚠️  Melanjutkan dengan --force-reset..."
 fi
 
-# Ejecutar el comando original de Prisma
+# Menjalankan perintah Prisma asli
 npx prisma $COMMAND
