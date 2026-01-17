@@ -1,187 +1,187 @@
-# 🚀 Echo ERP - Sistema ERP Completo
+# 🚀 Echo ERP - Sistem ERP Lengkap
 
-Sistema ERP moderno y completo desarrollado con Next.js 14, diseñado para pequeñas y medianas empresas que necesitan gestionar sus operaciones de forma eficiente y profesional.
+Sistem ERP modern dan lengkap dikembangkan dengan Next.js 14, dirancang untuk usaha kecil dan menengah yang perlu mengelola operasi secara efisien dan profesional.
 
 [![GitHub](https://img.shields.io/badge/GitHub-falconsoft3d%2Ffalconerp.xyz-blue?logo=github)](https://github.com/falconsoft3d/falconerp.xyz)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
 
-## 📋 Características Principales
+## 📋 Fitur Utama
 
 ### 🏢 Multi-Perusahaan
 
-- ✅ Gestión de múltiples empresas desde una sola cuenta
-- ✅ Temas personalizados por empresa (colores primarios y secundarios)
-- ✅ Configuración independiente de numeración de facturas
-- ✅ Logo y datos fiscales personalizados
+- ✅ Manajemen banyak perusahaan dari satu akun
+- ✅ Tema kustom per perusahaan (warna primer dan sekunder)
+- ✅ Konfigurasi independen penomoran faktur
+- ✅ Logo dan data fiskal yang disesuaikan
 
-### 📦 Gestión de Productos
+### 📦 Manajemen Produk
 
-- ✅ Catálogo completo con imágenes
-- ✅ Control de stock e inventario
-- ✅ Categorías y precios con IVA
-- ✅ Importación desde Odoo
+- ✅ Katalog lengkap dengan gambar
+- ✅ Kontrol stok dan inventaris
+- ✅ Kategori dan harga dengan PPN
+- ✅ Impor dari Odoo
 
-### 👥 Gestión de Contactos
+### 👥 Manajemen Kontak
 
-- ✅ Base de datos de clientes y proveedores
-- ✅ Información completa (NIF, dirección, contacto)
-- ✅ Historial de facturas
-- ✅ Importación desde Odoo
+- ✅ Basis data pelanggan dan pemasok
+- ✅ Informasi lengkap (NIF, alamat, kontak)
+- ✅ Riwayat faktur
+- ✅ Impor dari Odoo
 
-### 📄 Facturación Completa
+### 📄 Faktur Lengkap
 
-- ✅ Facturas de venta y compra
-- ✅ Cálculo automático de IVA y totales
-- ✅ Generación de PDF profesionales
-- ✅ Envío por email
-- ✅ Adjuntos y comentarios
-- ✅ Estados de pago
-- ✅ Importación masiva desde Excel
+- ✅ Faktur penjualan dan pembelian
+- ✅ Perhitungan otomatis PPN dan total
+- ✅ Pembuatan PDF profesional
+- ✅ Pengiriman melalui email
+- ✅ Lampiran dan komentar
+- ✅ Status pembayaran
+- ✅ Impor massal dari Excel
 
-### 💰 Punto de Venta (POS)
+### 💰 Point of Sale (POS)
 
-- ✅ Interfaz intuitiva con imágenes de productos
-- ✅ Filtrado por categorías
-- ✅ Búsqueda rápida
-- ✅ Generación inmediata de facturas
-- ✅ Descuentos y cálculos automáticos
+- ✅ Antarmuka intuitif dengan gambar produk
+- ✅ Penyaringan berdasarkan kategori
+- ✅ Pencarian cepat
+- ✅ Pembuatan faktur instan
+- ✅ Diskon dan perhitungan otomatis
 
 ### 🎯 CRM
 
-- ✅ Gestión de oportunidades de venta
-- ✅ Pipeline personalizable con drag & drop
-- ✅ Etapas configurables
-- ✅ Formularios públicos para captación de leads
+- ✅ Manajemen peluang penjualan
+- ✅ Pipeline yang dapat disesuaikan dengan drag & drop
+- ✅ Tahapan yang dapat dikonfigurasi
+- ✅ Formulir publik untuk penangkapan lead
 
-### 📊 Proyectos y Tareas
+### 📊 Proyek dan Tugas
 
-- ✅ Gestión de proyectos
-- ✅ Control de tareas por proyecto
-- ✅ Estados y prioridades
-- ✅ Asignación a usuarios
+- ✅ Manajemen proyek
+- ✅ Kontrol tugas per proyek
+- ✅ Status dan prioritas
+- ✅ Penugasan ke pengguna
 
-### 👤 Control de Asistencia
+### 👤 Kontrol Kehadiran
 
-- ✅ Registro de entrada/salida
-- ✅ Cálculo de horas trabajadas
-- ✅ Historial por empleado
+- ✅ Pencatatan masuk/keluar
+- ✅ Perhitungan jam kerja
+- ✅ Riwayat per karyawan
 
-### 🔐 Autenticación y Seguridad
+### 🔐 Autentikasi dan Keamanan
 
-- ✅ Sistema de login/registro
-- ✅ JWT para autenticación
-- ✅ Verificación de email
-- ✅ Recuperación de contraseña
-- ✅ Roles de usuario
+- ✅ Sistem login/registrasi
+- ✅ JWT untuk autentikasi
+- ✅ Verifikasi email
+- ✅ Pemulihan kata sandi
+- ✅ Peran pengguna
 
 ### 🌐 API REST
 
-- ✅ API Key por empresa
-- ✅ Tokens de subida de archivos
-- ✅ Endpoints documentados
+- ✅ API Key per perusahaan
+- ✅ Token unggah berkas
+- ✅ Endpoint yang didokumentasikan
 
-### 📧 Sistema de Email
+### 📧 Sistem Email
 
-- ✅ Configuración SMTP personalizada
-- ✅ Plantillas de email
-- ✅ Envío de facturas automático
+- ✅ Konfigurasi SMTP yang disesuaikan
+- ✅ Template email
+- ✅ Pengiriman faktur otomatis
 
-### 🔄 Integración con Odoo
+### 🔄 Integrasi dengan Odoo
 
-- ✅ Importación de productos
-- ✅ Importación de contactos
-- ✅ Sincronización de datos
+- ✅ Impor produk
+- ✅ Impor kontak
+- ✅ Sinkronisasi data
 
-## 🛠 Tecnologías Utilizadas
+## 🛠 Teknologi yang Digunakan
 
 - **Framework**: Next.js 14 (App Router)
-- **Lenguaje**: TypeScript 5
-- **Base de Datos**: PostgreSQL
+- **Bahasa**: TypeScript 5
+- **Basis Data**: PostgreSQL
 - **ORM**: Prisma 6
-- **Estilos**: Tailwind CSS 4
-- **Autenticación**: JWT (jose)
-- **Generación PDF**: jsPDF + Puppeteer
+- **Gaya**: Tailwind CSS 4
+- **Autentikasi**: JWT (jose)
+- **Pembuatan PDF**: jsPDF + Puppeteer
 - **Drag & Drop**: @hello-pangea/dnd
-- **Gráficos**: Recharts
+- **Grafik**: Recharts
 - **Excel**: XLSX
 - **Email**: Nodemailer
 
-## 🚀 Instalación
+## 🚀 Instalasi
 
-### Requisitos Previos
+### Prasyarat
 
 - Node.js 18+
 - PostgreSQL 14+
-- npm o yarn
+- npm atau yarn
 
-### Pasos de Instalación
+### Langkah Instalasi
 
-1. **Clonar el repositorio**
+1. **Kloning repositori**
 
 ```bash
 git clone https://github.com/falconsoft3d/falconerp.xyz.git
 cd falconerp.xyz
 ```
 
-2. **Instalar dependencias**
+2. **Instal dependensi**
 
 ```bash
 npm install
 ```
 
-3. **Configurar variables de entorno**
+3. **Konfigurasi variabel lingkungan**
 
-Crear un archivo `.env` en la raíz del proyecto:
+Buat file `.env` di root proyek:
 
 ```env
-# Base de datos PostgreSQL
-DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/falconerp"
+# Basis data PostgreSQL
+DATABASE_URL="postgresql://pengguna:katasandi@localhost:5432/falconerp"
 
-# JWT Secret (genera una clave segura)
-JWT_SECRET="tu-clave-secreta-muy-segura-aqui"
+# JWT Secret (buat kunci yang aman)
+JWT_SECRET="kunci-rahasia-anda-yang-sangat-aman-disini"
 
-# Configuración de la aplicación
+# Konfigurasi aplikasi
 NEXT_PUBLIC_ALLOW_REGISTRATION="true"
 
-# Email (opcional - para envío de facturas)
+# Email (opsional - untuk pengiriman faktur)
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="587"
-SMTP_USER="tu-email@gmail.com"
-SMTP_PASSWORD="tu-contraseña-app"
+SMTP_USER="email-anda@gmail.com"
+SMTP_PASSWORD="kata-sandi-aplikasi"
 ```
 
-4. **Configurar la base de datos**
+4. **Konfigurasi basis data**
 
 ```bash
-# Generar cliente de Prisma
+# Menghasilkan klien Prisma
 npx prisma generate
 
-# Ejecutar migraciones
+# Menjalankan migrasi
 npx prisma db push
 
-# (Opcional) Cargar datos de ejemplo
+# (Opsional) Memuat data contoh
 npx prisma db seed
 ```
 
-5. **Ejecutar en desarrollo**
+5. **Jalankan dalam mode pengembangan**
 
 ```bash
 npm run dev
 ```
 
-La aplicación estará disponible en `http://localhost:3000`
+Aplikasi akan tersedia di `http://localhost:3000`
 
-## 📦 Despliegue en Producción
+## 📦 Penyebaran ke Produksi
 
-### Vercel (Recomendado)
+### Vercel (Direkomendasikan)
 
-1. **Conectar con GitHub**
-   - Importa el proyecto desde GitHub en Vercel
-   - Configura las variables de entorno
+1. **Hubungkan dengan GitHub**
+   - Impor proyek dari GitHub ke Vercel
+   - Konfigurasikan variabel lingkungan
 
-2. **Variables de entorno en Vercel**
+2. **Variabel lingkungan di Vercel**
 
    ```
    DATABASE_URL
@@ -189,69 +189,69 @@ La aplicación estará disponible en `http://localhost:3000`
    NEXT_PUBLIC_ALLOW_REGISTRATION
    ```
 
-3. **Deploy automático**
-   - Vercel desplegará automáticamente en cada push
+3. **Deploy otomatis**
+   - Vercel akan melakukan deploy otomatis pada setiap push
 
 ### Build Manual
 
 ```bash
-# Generar build de producción
+# Membangun untuk produksi
 npm run build
 
-# Ejecutar en producción
+# Menjalankan di produksi
 npm start
 ```
 
-## 📚 Estructura del Proyecto
+## 📚 Struktur Proyek
 
 ```
 falconerp.xyz/
-├── app/                    # Páginas y rutas de Next.js
+├── app/                    # Halaman dan rute Next.js
 │   ├── api/               # API Routes
-│   ├── dashboard/         # Panel de administración
-│   ├── login/            # Autenticación
+│   ├── dashboard/         # Panel administrasi
+│   ├── login/            # Autentikasi
 │   └── ...
-├── components/            # Componentes React reutilizables
-├── lib/                   # Utilidades y helpers
-├── prisma/               # Schema y migraciones de base de datos
-├── public/               # Archivos estáticos
-└── content/              # Contenido del blog (Markdown)
+├── components/            # Komponen React yang dapat digunakan kembali
+├── lib/                   # Utilitas dan helper
+├── prisma/               # Skema dan migrasi basis data
+├── public/               # Berkas statis
+└── content/              # Konten blog (Markdown)
 ```
 
-## 🤝 Contribuir
+## 🤝 Berkontribusi
 
-Las contribuciones son bienvenidas! Por favor:
+Kontribusi sangat diterima! Silakan:
 
-1. Haz fork del proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+1. Fork proyek ini
+2. Buat branch untuk fitur Anda (`git checkout -b fitur/FiturHebat`)
+3. Commit perubahan Anda (`git commit -m 'Menambahkan FiturHebat'`)
+4. Push ke branch (`git push origin fitur/FiturHebat`)
+5. Buka Pull Request
 
-## 📄 Licencia
+## 📄 Lisensi
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+Proyek ini dilisensikan di bawah Lisensi MIT. Lihat berkas `LICENSE` untuk detail lebih lanjut.
 
-## 👤 Autor
+## 👤 Penulis
 
 **Marlon Falcon Hernandez**
 
 - GitHub: [@falconsoft3d](https://github.com/falconsoft3d)
-- Proyecto: [Echo ERP](https://github.com/falconsoft3d/falconerp.xyz)
+- Proyek: [Echo ERP](https://github.com/falconsoft3d/falconerp.xyz)
 
-## 🌟 Agradecimientos
+## 🌟 Ucapan Terima Kasih
 
-- Next.js Team por el increíble framework
-- Vercel por el hosting
-- Comunidad open source
+- Tim Next.js untuk framework yang luar biasa
+- Vercel untuk hosting
+- Komunitas open source
 
-## 📞 Soporte
+## 📞 Dukungan
 
-Si tienes preguntas o necesitas ayuda:
+Jika Anda memiliki pertanyaan atau memerlukan bantuan:
 
-- Abre un [Issue](https://github.com/falconsoft3d/falconerp.xyz/issues)
-- Revisa la [documentación](https://github.com/falconsoft3d/falconerp.xyz/wiki)
+- Buka [Issue](https://github.com/falconsoft3d/falconerp.xyz/issues)
+- Periksa [dokumentasi](https://github.com/falconsoft3d/falconerp.xyz/wiki)
 
 ---
 
-⭐ Si este proyecto te resulta útil, considera darle una estrella en GitHub!
+⭐ Jika proyek ini berguna bagi Anda, pertimbangkan untuk memberikan bintang di GitHub!
