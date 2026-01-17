@@ -2,8 +2,6 @@
 
 Sistem ERP modern dan lengkap dikembangkan dengan Next.js 14, dirancang untuk usaha kecil dan menengah yang perlu mengelola operasi secara efisien dan profesional.
 
-[![GitHub](https://img.shields.io/badge/GitHub-falconsoft3d%2Ffalconerp.xyz-blue?logo=github)](https://github.com/falconsoft3d/falconerp.xyz)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
 
@@ -120,11 +118,6 @@ Sistem ERP modern dan lengkap dikembangkan dengan Next.js 14, dirancang untuk us
 
 1. **Kloning repositori**
 
-```bash
-git clone https://github.com/falconsoft3d/falconerp.xyz.git
-cd falconerp.xyz
-```
-
 2. **Instal dependensi**
 
 ```bash
@@ -217,41 +210,3 @@ falconerp.xyz/
 ├── public/               # Berkas statis
 └── content/              # Konten blog (Markdown)
 ```
-
-## 🤝 Berkontribusi
-
-Kontribusi sangat diterima! Silakan:
-
-1. Fork proyek ini
-2. Buat branch untuk fitur Anda (`git checkout -b fitur/FiturHebat`)
-3. Commit perubahan Anda (`git commit -m 'Menambahkan FiturHebat'`)
-4. Push ke branch (`git push origin fitur/FiturHebat`)
-5. Buka Pull Request
-
-## 📄 Lisensi
-
-Proyek ini dilisensikan di bawah Lisensi MIT. Lihat berkas `LICENSE` untuk detail lebih lanjut.
-
-## 👤 Penulis
-
-**Marlon Falcon Hernandez**
-
-- GitHub: [@falconsoft3d](https://github.com/falconsoft3d)
-- Proyek: [Echo ERP](https://github.com/falconsoft3d/falconerp.xyz)
-
-## 🌟 Ucapan Terima Kasih
-
-- Tim Next.js untuk framework yang luar biasa
-- Vercel untuk hosting
-- Komunitas open source
-
-## 📞 Dukungan
-
-Jika Anda memiliki pertanyaan atau memerlukan bantuan:
-
-- Buka [Issue](https://github.com/falconsoft3d/falconerp.xyz/issues)
-- Periksa [dokumentasi](https://github.com/falconsoft3d/falconerp.xyz/wiki)
-
----
-
-⭐ Jika proyek ini berguna bagi Anda, pertimbangkan untuk memberikan bintang di GitHub!
