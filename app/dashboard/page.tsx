@@ -101,7 +101,7 @@ export default function DashboardPage() {
 
   const kpiCards = [
     {
-      title: "Productos",
+      title: "Produk",
       value: loading ? "..." : stats.productsCount.toString(),
       icon: (
         <svg
@@ -122,7 +122,7 @@ export default function DashboardPage() {
       link: "/dashboard/products",
     },
     {
-      title: "Contactos",
+      title: "Kontak",
       value: loading ? "..." : stats.contactsCount.toString(),
       icon: (
         <svg
@@ -143,7 +143,7 @@ export default function DashboardPage() {
       link: "/dashboard/contacts",
     },
     {
-      title: "Fact. Ventas",
+      title: "Faktur Penjualan",
       value: loading ? "..." : stats.salesInvoicesCount.toString(),
       icon: (
         <svg
@@ -164,7 +164,7 @@ export default function DashboardPage() {
       link: "/dashboard/invoices",
     },
     {
-      title: "Fact. Compras",
+      title: "Faktur Pembelian",
       value: loading ? "..." : stats.purchaseInvoicesCount.toString(),
       icon: (
         <svg
@@ -185,7 +185,7 @@ export default function DashboardPage() {
       link: "/dashboard/purchase-invoices",
     },
     {
-      title: "Proyectos",
+      title: "Proyek",
       value: loading ? "..." : stats.projectsCount.toString(),
       icon: (
         <svg
@@ -206,7 +206,7 @@ export default function DashboardPage() {
       link: "/dashboard/projects",
     },
     {
-      title: "Contactos Web",
+      title: "Kontak Web",
       value: loading ? "..." : stats.webContactsCount.toString(),
       icon: (
         <svg
@@ -227,7 +227,7 @@ export default function DashboardPage() {
       link: "/dashboard/web-contacts",
     },
     {
-      title: "Ventas",
+      title: "Penjualan",
       value: loading
         ? "..."
         : `${getCurrencySymbol(stats.currency)}${stats.totalSalesRevenue.toFixed(2)}`,
@@ -250,7 +250,7 @@ export default function DashboardPage() {
       link: "/dashboard/invoices",
     },
     {
-      title: "Compras",
+      title: "Pembelian",
       value: loading
         ? "..."
         : `${getCurrencySymbol(stats.currency)}${stats.totalPurchaseRevenue.toFixed(2)}`,
@@ -290,8 +290,8 @@ export default function DashboardPage() {
 
   const quickActions = [
     {
-      title: "Nuevo Producto",
-      description: "Agrega productos a tu catálogo",
+      title: "Produk Baru",
+      description: "Tambahkan produk ke katalog Anda",
       icon: (
         <svg
           className="w-6 h-6"
@@ -310,8 +310,8 @@ export default function DashboardPage() {
       link: "/dashboard/products/new",
     },
     {
-      title: "Nuevo Cliente",
-      description: "Registra un nuevo cliente",
+      title: "Klien Baru",
+      description: "Daftarkan klien baru",
       icon: (
         <svg
           className="w-6 h-6"
@@ -330,8 +330,8 @@ export default function DashboardPage() {
       link: "/dashboard/customers/new",
     },
     {
-      title: "Nueva Factura",
-      description: "Crea una nueva factura",
+      title: "Faktur Baru",
+      description: "Buat faktur baru",
       icon: (
         <svg
           className="w-6 h-6"
@@ -386,10 +386,10 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h3 className="text-xl font-bold text-gray-800">
-              Facturas por Mes
+              Faktur per Bulan
             </h3>
             <p className="text-gray-600 text-sm mt-1">
-              Evolución de ventas y compras en {selectedYear}
+              Perkembangan penjualan dan pembelian di tahun {selectedYear}
             </p>
           </div>
           <select
@@ -432,7 +432,7 @@ export default function DashboardPage() {
                 }}
                 formatter={(value: number, name: string) => [
                   `${getCurrencySymbol(stats.currency)}${value.toFixed(2)}`,
-                  name === "ventas" ? "Ventas" : "Compras",
+                  name === "ventas" ? "Penjualan" : "Pembelian",
                 ]}
               />
               <Line
@@ -442,7 +442,7 @@ export default function DashboardPage() {
                 strokeWidth={3}
                 dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
-                name="Ventas"
+                name="Penjualan"
               />
               <Line
                 type="monotone"
@@ -451,7 +451,7 @@ export default function DashboardPage() {
                 strokeWidth={3}
                 dot={{ fill: "#ef4444", strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6 }}
-                name="Compras"
+                name="Pembelian"
               />
             </LineChart>
           </ResponsiveContainer>
@@ -460,9 +460,7 @@ export default function DashboardPage() {
 
       {/* Acciones Rápidas */}
       <div>
-        <h3 className="text-xl font-bold text-gray-800 mb-4">
-          Acciones Rápidas
-        </h3>
+        <h3 className="text-xl font-bold text-gray-800 mb-4">Tindakan Cepat</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {quickActions.map((action, index) => (
             <Link key={index} href={action.link}>
