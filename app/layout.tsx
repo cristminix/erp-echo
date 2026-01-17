@@ -1,22 +1,22 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Providers } from "./providers";
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { Providers } from "./providers"
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-});
+})
 
 export const metadata: Metadata = {
-  title: "FalconERP",
+  title: "Echo ERP",
   description: "Sistema de gestión empresarial para empresas",
-};
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="es">
@@ -24,5 +24,5 @@ export default function RootLayout({
         <Providers>{children}</Providers>
       </body>
     </html>
-  );
+  )
 }

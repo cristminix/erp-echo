@@ -3,7 +3,11 @@
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/client"
 }
+
+// Generator untuk seeding
+// Untuk menjalankan seed: pnpm tsx prisma/seed.ts
 
 datasource db {
   provider = "postgresql"
