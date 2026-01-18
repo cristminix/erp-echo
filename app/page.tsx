@@ -13,13 +13,14 @@ export default function Home() {
       <HomeClient />
 
       {/* Blog Section - Server Side para leer archivos MD */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 -mt-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 -mt-24 hidden">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-800 mb-4">
             Blog y Recursos
           </h2>
           <p className="text-xl text-gray-600">
-            Aprende más sobre gestión empresarial y optimiza tu negocio
+            Pelajari lebih lanjut tentang manajemen bisnis dan optimalkan usaha
+            Anda
           </p>
         </div>
 
@@ -36,7 +37,7 @@ export default function Home() {
                 href="/blog"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg shadow-md transition-all"
               >
-                Ver todos los artículos
+                Lihat semua artikel
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -56,8 +57,8 @@ export default function Home() {
         ) : (
           <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
             <p className="text-gray-600">
-              Próximamente: Artículos sobre facturación, inventarios, recursos
-              humanos y más...
+              Segera Hadir: Artikel tentang faktur, inventaris, sumber daya
+              manusia, dan lainnya...
             </p>
           </div>
         )}
@@ -87,7 +88,7 @@ export default function Home() {
                 <span className="text-xl font-bold">Echo ERP</span>
               </div>
               <p className="text-gray-400">
-                Sistema ERP simple y completo para tu negocio
+                Sistem ERP sederhana dan lengkap untuk bisnis Anda
               </p>
             </div>
             <div>
@@ -95,7 +96,7 @@ export default function Home() {
               <ul className="space-y-2 text-gray-400">
                 <li>
                   <Link href="/" className="hover:text-white">
-                    Inicio
+                    Beranda
                   </Link>
                 </li>
                 <li>
@@ -105,22 +106,22 @@ export default function Home() {
                 </li>
                 <li>
                   <Link href="/login" className="hover:text-white">
-                    Iniciar Sesión
+                    Masuk
                   </Link>
                 </li>
                 <li>
                   <Link href="/dashboard" className="hover:text-white">
-                    Dashboard
+                    Dasbor
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Proyecto</h4>
+              <h4 className="font-semibold mb-4">Proyek</h4>
               <ul className="space-y-2 text-gray-400">
-                <li>
+                <li className="hidden">
                   <a
-                    href="https://github.com/falconsoft3d/falconerp.xyz"
+                    href="#"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-white inline-flex items-center gap-2"
@@ -139,14 +140,14 @@ export default function Home() {
                     GitHub
                   </a>
                 </li>
-                <li className="hover:text-white">Código Abierto</li>
-                <li className="hover:text-white">Licencia MIT</li>
-                <li className="hover:text-white">Documentación</li>
+                {/* <li className="hover:text-white">Código Abierto</li>
+                <li className="hover:text-white">Licencia MIT</li> */}
+                <li className="hover:text-white">Dokumentasi</li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>© 2025 Echo ERP. Todos los derechos reservados.</p>
+            <p>© 2025 Echo ERP. alright reserved.</p>
           </div>
         </div>
       </footer>

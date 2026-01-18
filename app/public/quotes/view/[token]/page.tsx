@@ -1,192 +1,194 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { useState, useEffect } from "react"
+import { useParams } from "next/navigation"
+import { Card } from "@/components/ui/Card"
+import { Button } from "@/components/ui/Button"
 
 interface Company {
-  name: string;
-  nif: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
-  phone: string;
-  email: string;
-  logo: string | null;
+  name: string
+  nif: string
+  address: string
+  city: string
+  postalCode: string
+  country: string
+  phone: string
+  email: string
+  logo: string | null
 }
 
 interface Contact {
-  name: string;
-  email: string;
-  phone: string;
-  nif: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
+  name: string
+  email: string
+  phone: string
+  nif: string
+  address: string
+  city: string
+  postalCode: string
+  country: string
 }
 
 interface Product {
-  code: string;
-  name: string;
-  description: string | null;
+  code: string
+  name: string
+  description: string | null
 }
 
 interface QuoteItem {
-  id: string;
-  productId: string;
-  product: Product;
-  description: string;
-  quantity: number;
-  price: number;
-  tax: number;
-  subtotal: number;
-  taxAmount: number;
-  total: number;
+  id: string
+  productId: string
+  product: Product
+  description: string
+  quantity: number
+  price: number
+  tax: number
+  subtotal: number
+  taxAmount: number
+  total: number
 }
 
 interface Quote {
-  id: string;
-  number: string;
-  date: string;
-  expiryDate: string | null;
-  currency: string;
-  subtotal: number;
-  taxAmount: number;
-  total: number;
-  status: string;
-  notes: string | null;
-  company: Company;
-  contact: Contact;
-  items: QuoteItem[];
-  clientApprovalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
-  clientApprovedAt: string | null;
-  clientRejectionReason: string | null;
+  id: string
+  number: string
+  date: string
+  expiryDate: string | null
+  currency: string
+  subtotal: number
+  taxAmount: number
+  total: number
+  status: string
+  notes: string | null
+  company: Company
+  contact: Contact
+  items: QuoteItem[]
+  clientApprovalStatus: "PENDING" | "APPROVED" | "REJECTED"
+  clientApprovedAt: string | null
+  clientRejectionReason: string | null
 }
 
 export default function PublicQuotePage() {
-  const params = useParams();
-  const [quote, setQuote] = useState<Quote | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [processing, setProcessing] = useState(false);
-  const [rejectionReason, setRejectionReason] = useState('');
-  const [showRejectForm, setShowRejectForm] = useState(false);
+  const params = useParams()
+  const [quote, setQuote] = useState<Quote | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [processing, setProcessing] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState("")
+  const [showRejectForm, setShowRejectForm] = useState(false)
 
   useEffect(() => {
-    fetchQuote();
-  }, []);
+    fetchQuote()
+  }, [])
 
   const fetchQuote = async () => {
     try {
-      const res = await fetch(`/api/public/quotes/${params.token}`);
+      const res = await fetch(`/api/public/quotes/${params.token}`)
       if (res.ok) {
-        const data = await res.json();
-        setQuote(data);
-        setError('');
+        const data = await res.json()
+        setQuote(data)
+        setError("")
       } else {
-        const errorData = await res.json();
-        setError(errorData.error || 'Error al cargar el presupuesto');
+        const errorData = await res.json()
+        setError(errorData.error || "Error al cargar el presupuesto")
       }
     } catch (error) {
-      console.error('Error:', error);
-      setError('Error al cargar el presupuesto');
+      console.error("Error:", error)
+      setError("Error al cargar el presupuesto")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleApprove = async () => {
-    if (!confirm('¿Está seguro de aprobar este presupuesto?')) return;
-    
-    setProcessing(true);
-    setError('');
+    if (!confirm("¿Está seguro de aprobar este presupuesto?")) return
+
+    setProcessing(true)
+    setError("")
 
     try {
       const res = await fetch(`/api/public/quotes/${params.token}/approval`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'approve' }),
-      });
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "approve" }),
+      })
 
       if (res.ok) {
-        await fetchQuote();
-        alert('✓ Presupuesto aprobado exitosamente');
+        await fetchQuote()
+        alert("✓ Presupuesto aprobado exitosamente")
       } else {
-        const data = await res.json();
-        setError(data.error || 'Error al aprobar presupuesto');
+        const data = await res.json()
+        setError(data.error || "Error al aprobar presupuesto")
       }
     } catch (error) {
-      console.error('Error:', error);
-      setError('Error al aprobar presupuesto');
+      console.error("Error:", error)
+      setError("Error al aprobar presupuesto")
     } finally {
-      setProcessing(false);
+      setProcessing(false)
     }
-  };
+  }
 
   const handleReject = async () => {
     if (!rejectionReason.trim()) {
-      alert('Por favor indique el motivo del rechazo');
-      return;
+      alert("Por favor indique el motivo del rechazo")
+      return
     }
 
-    if (!confirm('¿Está seguro de rechazar este presupuesto?')) return;
-    
-    setProcessing(true);
-    setError('');
+    if (!confirm("¿Está seguro de rechazar este presupuesto?")) return
+
+    setProcessing(true)
+    setError("")
 
     try {
       const res = await fetch(`/api/public/quotes/${params.token}/approval`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          action: 'reject',
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "reject",
           rejectionReason: rejectionReason.trim(),
         }),
-      });
+      })
 
       if (res.ok) {
-        await fetchQuote();
-        setShowRejectForm(false);
-        alert('Presupuesto rechazado');
+        await fetchQuote()
+        setShowRejectForm(false)
+        alert("Presupuesto rechazado")
       } else {
-        const data = await res.json();
-        setError(data.error || 'Error al rechazar presupuesto');
+        const data = await res.json()
+        setError(data.error || "Error al rechazar presupuesto")
       }
     } catch (error) {
-      console.error('Error:', error);
-      setError('Error al rechazar presupuesto');
+      console.error("Error:", error)
+      setError("Error al rechazar presupuesto")
     } finally {
-      setProcessing(false);
+      setProcessing(false)
     }
-  };
+  }
 
   const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: currency || 'EUR',
-    }).format(amount);
-  };
+    return new Intl.NumberFormat("es-ES", {
+      style: "currency",
+      currency: currency || "EUR",
+    }).format(amount)
+  }
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      PENDING: 'bg-yellow-100 text-yellow-800',
-      APPROVED: 'bg-green-100 text-green-800',
-      REJECTED: 'bg-red-100 text-red-800',
-    };
+      PENDING: "bg-yellow-100 text-yellow-800",
+      APPROVED: "bg-green-100 text-green-800",
+      REJECTED: "bg-red-100 text-red-800",
+    }
     const labels = {
-      PENDING: '⏳ Pendiente de Aprobación',
-      APPROVED: '✅ Aprobado',
-      REJECTED: '❌ Rechazado',
-    };
+      PENDING: "⏳ Pendiente de Aprobación",
+      APPROVED: "✅ Aprobado",
+      REJECTED: "❌ Rechazado",
+    }
     return (
-      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${styles[status as keyof typeof styles]}`}>
+      <span
+        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${styles[status as keyof typeof styles]}`}
+      >
         {labels[status as keyof typeof labels]}
       </span>
-    );
-  };
+    )
+  }
 
   if (loading) {
     return (
@@ -196,7 +198,7 @@ export default function PublicQuotePage() {
           <p className="text-gray-600">Cargando presupuesto...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (error || !quote) {
@@ -205,14 +207,17 @@ export default function PublicQuotePage() {
         <Card className="max-w-md w-full">
           <div className="text-center py-8">
             <div className="text-6xl mb-4">❌</div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Presupuesto no encontrado</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              Presupuesto no encontrado
+            </h2>
             <p className="text-gray-600">
-              {error || 'El enlace puede ser inválido o el presupuesto ya no está disponible.'}
+              {error ||
+                "El enlace puede ser inválido o el presupuesto ya no está disponible."}
             </p>
           </div>
         </Card>
       </div>
-    );
+    )
   }
 
   return (
@@ -229,14 +234,18 @@ export default function PublicQuotePage() {
                   className="h-16 mb-4 object-contain"
                 />
               )}
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Presupuesto</h1>
-              <p className="text-xl text-teal-600 font-semibold">{quote.number}</p>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                Presupuesto
+              </h1>
+              <p className="text-xl text-teal-600 font-semibold">
+                {quote.number}
+              </p>
             </div>
             <div className="text-right">
               {getStatusBadge(quote.clientApprovalStatus)}
               {quote.clientApprovedAt && (
                 <p className="text-sm text-gray-500 mt-2">
-                  {new Date(quote.clientApprovedAt).toLocaleDateString('es-ES')}
+                  {new Date(quote.clientApprovedAt).toLocaleDateString("es-ES")}
                 </p>
               )}
             </div>
@@ -245,26 +254,44 @@ export default function PublicQuotePage() {
           {/* Información de empresa y cliente */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t">
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">De:</h3>
-              <p className="font-semibold text-gray-800">{quote.company.name}</p>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
+                De:
+              </h3>
+              <p className="font-semibold text-gray-800">
+                {quote.company.name}
+              </p>
               <p className="text-sm text-gray-600">NIF: {quote.company.nif}</p>
               <p className="text-sm text-gray-600">{quote.company.address}</p>
               <p className="text-sm text-gray-600">
-                {quote.company.postalCode} {quote.company.city}, {quote.company.country}
+                {quote.company.postalCode} {quote.company.city},{" "}
+                {quote.company.country}
               </p>
-              <p className="text-sm text-gray-600 mt-2">Tel: {quote.company.phone}</p>
-              <p className="text-sm text-gray-600">Email: {quote.company.email}</p>
+              <p className="text-sm text-gray-600 mt-2">
+                Tel: {quote.company.phone}
+              </p>
+              <p className="text-sm text-gray-600">
+                Email: {quote.company.email}
+              </p>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">Para:</h3>
-              <p className="font-semibold text-gray-800">{quote.contact.name}</p>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">
+                Para:
+              </h3>
+              <p className="font-semibold text-gray-800">
+                {quote.contact.name}
+              </p>
               <p className="text-sm text-gray-600">NIF: {quote.contact.nif}</p>
               <p className="text-sm text-gray-600">{quote.contact.address}</p>
               <p className="text-sm text-gray-600">
-                {quote.contact.postalCode} {quote.contact.city}, {quote.contact.country}
+                {quote.contact.postalCode} {quote.contact.city},{" "}
+                {quote.contact.country}
               </p>
-              <p className="text-sm text-gray-600 mt-2">Tel: {quote.contact.phone}</p>
-              <p className="text-sm text-gray-600">Email: {quote.contact.email}</p>
+              <p className="text-sm text-gray-600 mt-2">
+                Tel: {quote.contact.phone}
+              </p>
+              <p className="text-sm text-gray-600">
+                Email: {quote.contact.email}
+              </p>
             </div>
           </div>
 
@@ -273,14 +300,14 @@ export default function PublicQuotePage() {
             <div>
               <p className="text-sm text-gray-500">Fecha de Emisión</p>
               <p className="font-medium text-gray-800">
-                {new Date(quote.date).toLocaleDateString('es-ES')}
+                {new Date(quote.date).toLocaleDateString("es-ES")}
               </p>
             </div>
             {quote.expiryDate && (
               <div>
                 <p className="text-sm text-gray-500">Fecha de Vencimiento</p>
                 <p className="font-medium text-gray-800">
-                  {new Date(quote.expiryDate).toLocaleDateString('es-ES')}
+                  {new Date(quote.expiryDate).toLocaleDateString("es-ES")}
                 </p>
               </div>
             )}
@@ -318,7 +345,9 @@ export default function PublicQuotePage() {
                       <p className="font-medium text-gray-800">
                         {item.product.code} - {item.product.name}
                       </p>
-                      <p className="text-sm text-gray-600">{item.description}</p>
+                      <p className="text-sm text-gray-600">
+                        {item.description}
+                      </p>
                     </td>
                     <td className="px-4 py-4 text-center text-gray-800">
                       {item.quantity}
@@ -344,11 +373,15 @@ export default function PublicQuotePage() {
               <div className="w-64 space-y-2">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal:</span>
-                  <span className="font-medium">{formatCurrency(quote.subtotal, quote.currency)}</span>
+                  <span className="font-medium">
+                    {formatCurrency(quote.subtotal, quote.currency)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>IVA:</span>
-                  <span className="font-medium">{formatCurrency(quote.taxAmount, quote.currency)}</span>
+                  <span className="font-medium">
+                    {formatCurrency(quote.taxAmount, quote.currency)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-xl font-bold text-gray-800 pt-2 border-t">
                   <span>Total:</span>
@@ -368,19 +401,25 @@ export default function PublicQuotePage() {
         )}
 
         {/* Motivo de rechazo */}
-        {quote.clientApprovalStatus === 'REJECTED' && quote.clientRejectionReason && (
-          <Card className="mb-6 bg-red-50 border-red-200">
-            <h3 className="text-lg font-semibold text-red-800 mb-2">Motivo del Rechazo</h3>
-            <p className="text-red-700">{quote.clientRejectionReason}</p>
-          </Card>
-        )}
+        {quote.clientApprovalStatus === "REJECTED" &&
+          quote.clientRejectionReason && (
+            <Card className="mb-6 bg-red-50 border-red-200">
+              <h3 className="text-lg font-semibold text-red-800 mb-2">
+                Motivo del Rechazo
+              </h3>
+              <p className="text-red-700">{quote.clientRejectionReason}</p>
+            </Card>
+          )}
 
         {/* Botones de acción */}
-        {quote.clientApprovalStatus === 'PENDING' && (
+        {quote.clientApprovalStatus === "PENDING" && (
           <Card className="bg-blue-50 border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Acción Requerida</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Acción Requerida
+            </h3>
             <p className="text-gray-600 mb-4">
-              Por favor, revise el presupuesto y confirme si desea aprobarlo o rechazarlo.
+              Por favor, revise el presupuesto y confirme si desea aprobarlo o
+              rechazarlo.
             </p>
 
             {error && (
@@ -396,7 +435,7 @@ export default function PublicQuotePage() {
                   disabled={processing}
                   className="bg-green-600 hover:bg-green-700 flex-1"
                 >
-                  {processing ? 'Procesando...' : '✓ Aprobar Presupuesto'}
+                  {processing ? "Memproses..." : "✓ Aprobar Presupuesto"}
                 </Button>
                 <Button
                   onClick={() => setShowRejectForm(true)}
@@ -427,12 +466,12 @@ export default function PublicQuotePage() {
                     disabled={processing || !rejectionReason.trim()}
                     className="bg-red-600 hover:bg-red-700 flex-1"
                   >
-                    {processing ? 'Procesando...' : 'Confirmar Rechazo'}
+                    {processing ? "Memproses..." : "Confirmar Rechazo"}
                   </Button>
                   <Button
                     onClick={() => {
-                      setShowRejectForm(false);
-                      setRejectionReason('');
+                      setShowRejectForm(false)
+                      setRejectionReason("")
                     }}
                     disabled={processing}
                     variant="outline"
@@ -449,9 +488,11 @@ export default function PublicQuotePage() {
         {/* Footer */}
         <div className="text-center text-sm text-gray-500 mt-6">
           <p>Este presupuesto fue generado por {quote.company.name}</p>
-          <p className="mt-1">Si tiene alguna pregunta, contáctenos en {quote.company.email}</p>
+          <p className="mt-1">
+            Si tiene alguna pregunta, contáctenos en {quote.company.email}
+          </p>
         </div>
       </div>
     </div>
-  );
+  )
 }

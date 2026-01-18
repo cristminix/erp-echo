@@ -12,8 +12,8 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: "admin@jonisteak.com",
+    password: "password123",
   })
 
   // Cargar credenciales guardadas al montar el componente
@@ -45,7 +45,7 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Error al iniciar sesión")
+        throw new Error(data.error || "Gagal masuk")
       }
 
       // Guardar o eliminar credenciales según la opción "Recordarme"
@@ -58,8 +58,8 @@ export default function LoginPage() {
       }
 
       router.push("/dashboard")
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError((err as Error).message)
     } finally {
       setLoading(false)
     }
@@ -98,7 +98,7 @@ export default function LoginPage() {
               {process.env.NEXT_PUBLIC_ALLOW_REGISTRATION === "true" && (
                 <Link href="/register">
                   <button className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg shadow-md transition-all">
-                    Registrarse
+                    Daftar
                   </button>
                 </Link>
               )}
@@ -113,7 +113,7 @@ export default function LoginPage() {
           {/* Card de Login */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-              Iniciar Sesión
+              Masuk
             </h2>
 
             {error && (
@@ -124,9 +124,9 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <Input
-                label="Correo electrónico"
+                label="Email"
                 type="email"
-                placeholder="ejemplo@empresa.com"
+                placeholder="contoh@perusahaan.com"
                 required
                 value={formData.email}
                 onChange={(e) =>
@@ -135,7 +135,7 @@ export default function LoginPage() {
               />
 
               <Input
-                label="Contraseña"
+                label="Kata Sandi"
                 type="password"
                 placeholder="••••••••"
                 required
@@ -158,14 +158,14 @@ export default function LoginPage() {
                     htmlFor="rememberMe"
                     className="ml-2 text-sm text-gray-700 cursor-pointer"
                   >
-                    Recordarme
+                    Ingat Saya
                   </label>
                 </div>
                 <Link
                   href="/forgot-password"
                   className="text-sm text-teal-600 hover:text-teal-700 font-medium"
                 >
-                  ¿Olvidaste tu contraseña?
+                  Lupa kata sandi?
                 </Link>
               </div>
 
@@ -176,19 +176,19 @@ export default function LoginPage() {
                 className="w-full mt-6"
                 loading={loading}
               >
-                Ingresar
+                Masuk
               </Button>
             </form>
 
             {process.env.NEXT_PUBLIC_ALLOW_REGISTRATION === "true" && (
               <div className="mt-6 text-center">
                 <p className="text-gray-600">
-                  ¿No tienes cuenta?{" "}
+                  Belum punya akun?{" "}
                   <Link
                     href="/register"
                     className="text-teal-600 font-semibold hover:text-teal-700"
                   >
-                    Regístrate aquí
+                    Daftar di sini
                   </Link>
                 </p>
               </div>
@@ -221,15 +221,15 @@ export default function LoginPage() {
                 <span className="text-xl font-bold">Echo ERP</span>
               </div>
               <p className="text-gray-400">
-                Sistema ERP simple y completo para tu negocio
+                Sistem ERP sederhana dan lengkap untuk bisnismu
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Enlaces</h4>
+              <h4 className="font-semibold mb-4">Tautan</h4>
               <ul className="space-y-2 text-gray-400">
                 <li>
                   <Link href="/" className="hover:text-white">
-                    Inicio
+                    Beranda
                   </Link>
                 </li>
                 <li>
@@ -247,13 +247,13 @@ export default function LoginPage() {
             <div>
               <h4 className="font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-gray-400">
-                <li>Términos y Condiciones</li>
-                <li>Política de Privacidad</li>
+                <li>Syarat dan Ketentuan</li>
+                <li>Kebijakan Privasi</li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>© 2025 Echo ERP. Todos los derechos reservados.</p>
+            <p>© 2025 Echo ERP. Hak cipta dilindungi.</p>
           </div>
         </div>
       </footer>

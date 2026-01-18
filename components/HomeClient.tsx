@@ -88,13 +88,13 @@ export default function HomeClient() {
                   <>
                     <Link href="/login">
                       <button className="px-4 py-2 text-teal-600 hover:text-teal-700 font-medium">
-                        Iniciar Sesión
+                        Masuk
                       </button>
                     </Link>
                     {process.env.NEXT_PUBLIC_ALLOW_REGISTRATION === "true" && (
                       <Link href="/register">
                         <button className="px-6 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg shadow-md transition-all">
-                          Registrarse
+                          Daftar
                         </button>
                       </Link>
                     )}
@@ -110,19 +110,19 @@ export default function HomeClient() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Gestiona tu Negocio Completo
+            Kelola Bisnis Anda Secara Komprehensif
             <span className="block text-teal-600 mt-2">
-              con un ERP Simple y Potente
+              dengan ERP yang Sederhana dan Kuat
             </span>
           </h1>
           <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
-            Sistema completo de gestión empresarial: productos, clientes,
-            facturas y control de inventario. Todo lo que necesitas para tu
-            negocio en un solo lugar.
+            Sistem manajemen bisnis lengkap: produk, pelanggan, faktur dan
+            kontrol inventaris. Semua yang Anda butuhkan untuk bisnis Anda di
+            satu tempat.
           </p>
 
           {/* GitHub Badge */}
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-8 hidden">
             <a
               href="https://github.com/falconsoft3d/falconerp.xyz"
               target="_blank"
@@ -157,7 +157,7 @@ export default function HomeClient() {
               {isAuthenticated ? (
                 <Link href="/dashboard">
                   <button className="px-8 py-4 bg-teal-600 hover:bg-teal-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all">
-                    Ir al Dashboard
+                    Ke Dasbor
                   </button>
                 </Link>
               ) : (
@@ -165,13 +165,13 @@ export default function HomeClient() {
                   {process.env.NEXT_PUBLIC_ALLOW_REGISTRATION === "true" && (
                     <Link href="/register">
                       <button className="px-8 py-4 bg-teal-600 hover:bg-teal-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all">
-                        Comenzar Gratis
+                        Mulai Gratis
                       </button>
                     </Link>
                   )}
                   <Link href="/login">
                     <button className="px-8 py-4 bg-white hover:bg-gray-50 text-gray-800 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all border border-gray-200">
-                      Ver Demo
+                      Lihat Demo
                     </button>
                   </Link>
                 </>
@@ -181,18 +181,17 @@ export default function HomeClient() {
         </div>
 
         {/* About Project Section */}
-        <div className="mt-24 bg-gradient-to-r from-gray-900 to-gray-800 rounded-3xl shadow-2xl p-12 text-white">
+        <div className="hidden mt-24 bg-gradient-to-r from-gray-900 to-gray-800 rounded-3xl shadow-2xl p-12 text-white">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-6 text-center">
-              Acerca del Proyecto
+              Tentang Proyek
             </h2>
             <p className="text-lg text-gray-300 mb-8 leading-relaxed">
-              <strong className="text-white">Echo ERP</strong> es un sistema ERP
-              completo desarrollado con las últimas tecnologías web. Este
-              proyecto es de{" "}
-              <strong className="text-teal-400">código abierto</strong> y está
-              diseñado para ayudar a pequeñas y medianas empresas a gestionar
-              sus operaciones de forma eficiente y profesional.
+              <strong className="text-white">Echo ERP</strong> adalah sistem ERP
+              lengkap yang dikembangkan dengan teknologi web terbaru. Proyek ini
+              bersifat <strong className="text-teal-400">open source</strong>{" "}
+              dan dirancang untuk membantu usaha kecil dan menengah mengelola
+              operasi mereka secara efisien dan profesional.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -205,46 +204,46 @@ export default function HomeClient() {
                     • <strong>Next.js 14</strong> - Framework React
                   </li>
                   <li>
-                    • <strong>TypeScript</strong> - Tipado estático
+                    • <strong>TypeScript</strong> - Pengetikan statis
                   </li>
                   <li>
-                    • <strong>Prisma</strong> - ORM para base de datos
+                    • <strong>Prisma</strong> - ORM untuk basis data
                   </li>
                   <li>
-                    • <strong>PostgreSQL</strong> - Base de datos
+                    • <strong>PostgreSQL</strong> - Basis data
                   </li>
                   <li>
-                    • <strong>Tailwind CSS</strong> - Diseño moderno
+                    • <strong>Tailwind CSS</strong> - Desain modern
                   </li>
                   <li>
-                    • <strong>JWT</strong> - Autenticación segura
+                    • <strong>JWT</strong> - Otentikasi aman
                   </li>
                 </ul>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold mb-3 text-teal-400">
-                  ✨ Características Principales
+                  ✨ Fitur Utama
                 </h3>
                 <ul className="space-y-2 text-gray-300">
-                  <li>• Multi-empresa con temas personalizados</li>
-                  <li>• Gestión completa de productos e inventario</li>
-                  <li>• Facturación con cálculo automático de IVA</li>
-                  <li>• CRM con pipeline de oportunidades</li>
-                  <li>• Punto de Venta (POS) integrado</li>
-                  <li>• Sistema de proyectos y tareas</li>
+                  <li>• Multi-perusahaan dengan tema khusus</li>
+                  <li>• Manajemen lengkap produk dan inventaris</li>
+                  <li>• Fakturasi dengan perhitungan otomatis PPN</li>
+                  <li>• CRM dengan pipeline peluang</li>
+                  <li>• Point of Sale (POS) terintegrasi</li>
+                  <li>• Sistem proyek dan tugas</li>
                 </ul>
               </div>
             </div>
 
             <div className="bg-gray-800/50 rounded-xl p-6 mb-8">
               <h3 className="text-xl font-semibold mb-3 text-teal-400">
-                📖 Código Abierto
+                📖 Sumber Terbuka
               </h3>
               <p className="text-gray-300 mb-4">
-                Este proyecto está disponible en GitHub para que puedas
-                estudiarlo, modificarlo o usarlo en tus propios proyectos. ¡Las
-                contribuciones son bienvenidas!
+                Proyek ini tersedia di GitHub sehingga Anda dapat
+                mempelajarinya, memodifikasinya atau menggunakannya dalam proyek
+                Anda sendiri. Kontribusi sangat diharapkan!
               </p>
               <div className="flex flex-wrap gap-4">
                 <a
@@ -264,7 +263,7 @@ export default function HomeClient() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  Ver Repositorio
+                  Lihat Repositori
                 </a>
                 <a
                   href="https://github.com/falconsoft3d/falconerp.xyz/fork"
@@ -285,7 +284,7 @@ export default function HomeClient() {
                       d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
                     />
                   </svg>
-                  Fork en GitHub
+                  Fork di GitHub
                 </a>
                 <a
                   href="https://github.com/falconsoft3d/falconerp.xyz/archive/refs/heads/main.zip"
@@ -304,7 +303,7 @@ export default function HomeClient() {
                       d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                     />
                   </svg>
-                  Descargar ZIP
+                  Unduh ZIP
                 </a>
               </div>
             </div>
@@ -334,11 +333,11 @@ export default function HomeClient() {
               </svg>
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">
-              Gestión de Productos
+              Manajemen Produk
             </h3>
             <p className="text-gray-600">
-              Administra tu catálogo de productos con precios, stock y
-              categorías. Control total de tu inventario.
+              Kelola katalog produk Anda dengan harga, stok dan kategori.
+              Kendali penuh atas inventaris Anda.
             </p>
           </div>
 
@@ -359,11 +358,11 @@ export default function HomeClient() {
               </svg>
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">
-              Base de Clientes
+              Basis Pelanggan
             </h3>
             <p className="text-gray-600">
-              Organiza la información de tus clientes con datos completos de
-              contacto y seguimiento de facturas.
+              Atur informasi pelanggan Anda dengan data kontak lengkap dan
+              pelacakan faktur.
             </p>
           </div>
 
@@ -384,11 +383,11 @@ export default function HomeClient() {
               </svg>
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-2">
-              Facturación Rápida
+              Fakturasi Cepat
             </h3>
             <p className="text-gray-600">
-              Crea facturas profesionales en segundos con cálculo automático de
-              IVA y totales. Perfecto para tu negocio.
+              Buat faktur profesional dalam hitungan detik dengan perhitungan
+              otomatis PPN dan total. Sempurna untuk bisnis Anda.
             </p>
           </div>
         </div>
@@ -396,28 +395,28 @@ export default function HomeClient() {
         {/* Stats Section */}
         <div className="mt-24 bg-white rounded-2xl shadow-xl p-12">
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
-            Todo lo que Necesitas para tu Negocio
+            Semua yang Anda Butuhkan untuk Bisnis Anda
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="text-4xl font-bold text-teal-600 mb-2">📦</div>
-              <p className="text-gray-600 font-semibold">Productos</p>
-              <p className="text-sm text-gray-500">Gestión completa</p>
+              <p className="text-gray-600 font-semibold">Produk</p>
+              <p className="text-sm text-gray-500">Manajemen lengkap</p>
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold text-teal-600 mb-2">👥</div>
-              <p className="text-gray-600 font-semibold">Clientes</p>
-              <p className="text-sm text-gray-500">Base de datos</p>
+              <p className="text-gray-600 font-semibold">Pelanggan</p>
+              <p className="text-sm text-gray-500">Basis data</p>
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold text-teal-600 mb-2">📄</div>
-              <p className="text-gray-600 font-semibold">Facturas</p>
-              <p className="text-sm text-gray-500">Profesionales</p>
+              <p className="text-gray-600 font-semibold">Faktur</p>
+              <p className="text-sm text-gray-500">Profesional</p>
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold text-teal-600 mb-2">📊</div>
-              <p className="text-gray-600 font-semibold">Reportes</p>
-              <p className="text-sm text-gray-500">En tiempo real</p>
+              <p className="text-gray-600 font-semibold">Laporan</p>
+              <p className="text-sm text-gray-500">Real-time</p>
             </div>
           </div>
         </div>
@@ -426,10 +425,10 @@ export default function HomeClient() {
         <div className="mt-24 bg-gray-50 rounded-2xl p-12">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              ¿Tienes alguna pregunta?
+              Ada pertanyaan?
             </h2>
             <p className="text-xl text-gray-600">
-              Contáctanos y te responderemos lo antes posible
+              Hubungi kami dan kami akan merespons secepat mungkin
             </p>
           </div>
 
@@ -442,14 +441,14 @@ export default function HomeClient() {
           process.env.NEXT_PUBLIC_ALLOW_REGISTRATION === "true" && (
             <div className="mt-24 text-center">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                ¿Listo para Simplificar la Gestión de tu Negocio?
+                Siap Menyederhanakan Manajemen Bisnis Anda?
               </h2>
               <p className="text-xl text-gray-600 mb-8">
-                Comienza hoy mismo y lleva el control total de tu empresa
+                Mulai hari ini dan dapatkan kendali penuh atas perusahaan Anda
               </p>
               <Link href="/register">
                 <button className="px-10 py-4 bg-teal-600 hover:bg-teal-700 text-white text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all">
-                  Crear Cuenta Gratis
+                  Buat Akun Gratis
                 </button>
               </Link>
             </div>
@@ -509,7 +508,7 @@ function ContactForm() {
         // Formatear errores de validación de forma amigable
         if (data.details && Array.isArray(data.details)) {
           const errorMessages = data.details
-            .map((err: any) => err.message)
+            .map((err: { message: string }) => err.message)
             .join(", ")
           setError(errorMessages)
         } else {
@@ -529,11 +528,11 @@ function ContactForm() {
       <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-8 text-center max-w-2xl mx-auto">
         <div className="text-6xl mb-4">✅</div>
         <h3 className="text-2xl font-bold text-green-800 mb-2">
-          ¡Mensaje enviado!
+          Pesan terkirim!
         </h3>
         <p className="text-green-700">
-          Gracias por contactarnos. Hemos enviado un email de confirmación y te
-          responderemos pronto.
+          Terima kasih telah menghubungi kami. Kami telah mengirimkan email
+          konfirmasi dan akan segera merespons Anda.
         </p>
       </div>
     )
@@ -553,7 +552,7 @@ function ContactForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Nombre *
+            Nama *
           </label>
           <input
             type="text"
@@ -561,7 +560,7 @@ function ContactForm() {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-            placeholder="Tu nombre"
+            placeholder="Nama Anda"
           />
         </div>
 
@@ -577,7 +576,7 @@ function ContactForm() {
               setFormData({ ...formData, email: e.target.value })
             }
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-            placeholder="tu@email.com"
+            placeholder="email@anda.com"
           />
         </div>
       </div>
@@ -585,7 +584,7 @@ function ContactForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Teléfono
+            Telepon
           </label>
           <input
             type="tel"
@@ -594,7 +593,7 @@ function ContactForm() {
               setFormData({ ...formData, phone: e.target.value })
             }
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-            placeholder="+34 123 456 789"
+            placeholder="+62 123 456 789"
           />
         </div>
 
@@ -609,15 +608,15 @@ function ContactForm() {
               setFormData({ ...formData, company: e.target.value })
             }
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-900"
-            placeholder="Tu empresa"
+            placeholder="Perusahaan Anda"
           />
         </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Mensaje *{" "}
-          <span className="text-gray-500 text-xs">(mínimo 10 caracteres)</span>
+          Pesan *{" "}
+          <span className="text-gray-500 text-xs">(minimal 10 karakter)</span>
         </label>
         <textarea
           required
@@ -628,10 +627,10 @@ function ContactForm() {
           }
           rows={5}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none text-gray-900"
-          placeholder="Cuéntanos en qué podemos ayudarte... (mínimo 10 caracteres)"
+          placeholder="Beritahu kami bagaimana kami bisa membantu... (minimal 10 karakter)"
         />
         <p className="text-xs text-gray-500 mt-1">
-          {formData.message.length}/10 caracteres
+          {formData.message.length}/10 karakter
         </p>
       </div>
 
@@ -640,7 +639,7 @@ function ContactForm() {
         disabled={loading}
         className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-4 rounded-lg shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? "Enviando..." : "Enviar Mensaje"}
+        {loading ? "Mengirim..." : "Kirim Pesan"}
       </button>
     </form>
   )
